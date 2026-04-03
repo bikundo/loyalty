@@ -2,13 +2,13 @@
 
 namespace App\Livewire\Settings;
 
-use App\Concerns\ProfileValidationRules;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Livewire\Component;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use Livewire\Attributes\Computed;
-use Livewire\Attributes\Title;
-use Livewire\Component;
+use App\Concerns\ProfileValidationRules;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 #[Title('Profile settings')]
 class Profile extends Component
@@ -69,13 +69,13 @@ class Profile extends Component
     #[Computed]
     public function hasUnverifiedEmail(): bool
     {
-        return Auth::user() instanceof MustVerifyEmail && ! Auth::user()->hasVerifiedEmail();
+        return Auth::user() instanceof MustVerifyEmail && !Auth::user()->hasVerifiedEmail();
     }
 
     #[Computed]
     public function showDeleteUser(): bool
     {
-        return ! Auth::user() instanceof MustVerifyEmail
+        return !Auth::user() instanceof MustVerifyEmail
             || (Auth::user() instanceof MustVerifyEmail && Auth::user()->hasVerifiedEmail());
     }
 }

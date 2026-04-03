@@ -1,9 +1,9 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Auth\Notifications\ResetPassword;
 
 beforeEach(function () {
     $this->skipUnlessFortifyHas(Features::resetPasswords());
@@ -50,9 +50,9 @@ test('password can be reset with valid token', function () {
 
     Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
         $response = $this->post(route('password.update'), [
-            'token' => $notification->token,
-            'email' => $user->email,
-            'password' => 'password',
+            'token'                 => $notification->token,
+            'email'                 => $user->email,
+            'password'              => 'password',
             'password_confirmation' => 'password',
         ]);
 

@@ -1,10 +1,10 @@
 <?php
 
-use App\Livewire\Settings\Appearance;
+use Laravel\Fortify\Features;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\Security;
+use App\Livewire\Settings\Appearance;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');

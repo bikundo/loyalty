@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Settings;
 
-use App\Concerns\PasswordValidationRules;
+use Livewire\Component;
 use App\Livewire\Actions\Logout;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
+use App\Concerns\PasswordValidationRules;
 
 class DeleteUserForm extends Component
 {
