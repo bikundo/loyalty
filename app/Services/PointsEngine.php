@@ -33,6 +33,7 @@ class PointsEngine
 
         $awards = [];
 
+        /** @var \App\Models\LoyaltyRule $rule */
         foreach ($rules as $rule) {
             // Cannot stack if we've already generated an award
             if (!$rule->stack_with_others && count($awards) > 0) {

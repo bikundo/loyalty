@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Customer;
 use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 
 class CustomerProfile extends Component
 {
@@ -19,6 +20,13 @@ class CustomerProfile extends Component
         // But the middleware handles basic tenant scoping. We'll rely on global scopes if they exist
         // or explicitly check it if needed. For now the model belongs to a tenant explicitly.
         $this->customer = $customer;
+        $this->customer->loadCount('pointTransactions', 'redemptions');
+    }
+
+    #[On('points-awarded')]
+    public function refreshCustomer()
+    {
+        $this->customer->refresh();
         $this->customer->loadCount('pointTransactions', 'redemptions');
     }
 
