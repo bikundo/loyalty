@@ -10,6 +10,7 @@ return new class() extends Migration
     {
         Schema::create('plans', function (Blueprint $table): void {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->string('name');                          // Starter, Growth, Business, Enterprise
             $table->string('slug')->unique();
             $table->unsignedInteger('price_amount');         // In KES (stored as integer cents)
