@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\FraudFlagFactory;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class FraudFlag extends Model
 {
-    /** @use HasFactory<\Database\Factories\FraudFlagFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<FraudFlagFactory> */
+    use HasFactory;
 
     protected $fillable = [
         'tenant_id',
@@ -26,7 +29,7 @@ class FraudFlag extends Model
     ];
 
     protected $casts = [
-        'metadata' => 'json',
+        'metadata'    => 'json',
         'resolved_at' => 'datetime',
     ];
 

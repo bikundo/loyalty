@@ -2,20 +2,28 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToTenant;
 use App\Models\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\Concerns\Auditable;
+use Database\Factories\CashierFactory;
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Cashier extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\CashierFactory> */
-    use HasFactory, BelongsToTenant, HasUuid, Auditable, SoftDeletes, Notifiable;
+    use Auditable;
+    use BelongsToTenant;
+
+    /** @use HasFactory<CashierFactory> */
+    use HasFactory;
+
+    use HasUuid;
+    use Notifiable;
+    use SoftDeletes;
 
     protected $fillable = [
         'tenant_id',
@@ -34,11 +42,11 @@ class Cashier extends Authenticatable
     ];
 
     protected $casts = [
-        'pin' => 'hashed',
-        'is_active' => 'boolean',
-        'daily_award_cap_kes' => 'integer',
+        'pin'                     => 'hashed',
+        'is_active'               => 'boolean',
+        'daily_award_cap_kes'     => 'integer',
         'total_awarded_today_kes' => 'integer',
-        'last_login_at' => 'datetime',
+        'last_login_at'           => 'datetime',
     ];
 
     /**

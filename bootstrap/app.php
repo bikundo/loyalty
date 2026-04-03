@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\ResolveTenant;
 use Illuminate\Foundation\Application;
+use App\Http\Middleware\EnsureTenantContext;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
@@ -12,15 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-            \App\Http\Middleware\ResolveTenant::class,
+            ResolveTenant::class,
         ]);
 
         $middleware->api(append: [
-            \App\Http\Middleware\ResolveTenant::class,
+            ResolveTenant::class,
         ]);
 
         $middleware->alias([
-            'tenant' => \App\Http\Middleware\EnsureTenantContext::class,
+            'tenant' => EnsureTenantContext::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

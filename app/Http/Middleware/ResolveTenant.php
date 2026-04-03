@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Tenant;
-use App\Services\TenantContext;
 use Closure;
+use App\Models\Tenant;
 use Illuminate\Http\Request;
+use App\Services\TenantContext;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,12 +16,12 @@ class ResolveTenant
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // 1. Priority: Authenticated User (Web, API, Cashier, Customer)
-        foreach (['web', 'api', 'cashier', 'customer'] as $guard) {
+        // 1. Priority: Authenticated User (Web, Cashier, Customer)
+        foreach (['web', 'cashier', 'customer'] as $guard) {
             if (Auth::guard($guard)->check()) {
                 $user = Auth::guard($guard)->user();
 

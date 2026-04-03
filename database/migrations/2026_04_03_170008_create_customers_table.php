@@ -14,6 +14,7 @@ return new class() extends Migration
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->string('phone');                         // Encrypted at application layer
             $table->string('name')->nullable();              // Encrypted at application layer
+            $table->string('email')->nullable();
             $table->date('date_of_birth')->nullable();
             $table->string('status')->default('active');     // active | inactive | blocked
             $table->string('enrolment_channel')->default('dashboard'); // dashboard | sms | app | api

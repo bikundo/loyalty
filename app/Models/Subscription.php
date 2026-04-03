@@ -2,17 +2,23 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToTenant;
 use App\Models\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\SubscriptionFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Subscription extends Model
 {
-    /** @use HasFactory<\Database\Factories\SubscriptionFactory> */
-    use HasFactory, HasUuid, BelongsToTenant, Auditable;
+    use Auditable;
+    use BelongsToTenant;
+
+    /** @use HasFactory<SubscriptionFactory> */
+    use HasFactory;
+
+    use HasUuid;
 
     protected $fillable = [
         'tenant_id',
@@ -27,11 +33,11 @@ class Subscription extends Model
     ];
 
     protected $casts = [
-        'amount' => 'integer',
+        'amount'        => 'integer',
         'trial_ends_at' => 'datetime',
-        'starts_at' => 'datetime',
-        'ends_at' => 'datetime',
-        'canceled_at' => 'datetime',
+        'starts_at'     => 'datetime',
+        'ends_at'       => 'datetime',
+        'canceled_at'   => 'datetime',
     ];
 
     public function plan(): BelongsTo

@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\NotificationQueueFactory;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class NotificationQueue extends Model
 {
-    /** @use HasFactory<\Database\Factories\NotificationQueueFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<NotificationQueueFactory> */
+    use HasFactory;
 
     protected $fillable = [
         'tenant_id',
@@ -25,9 +28,9 @@ class NotificationQueue extends Model
     ];
 
     protected $casts = [
-        'retry_count' => 'integer',
+        'retry_count'  => 'integer',
         'scheduled_at' => 'datetime',
-        'sent_at' => 'datetime',
+        'sent_at'      => 'datetime',
     ];
 
     public function notifiable(): MorphTo

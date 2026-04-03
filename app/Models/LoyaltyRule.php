@@ -2,18 +2,25 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToTenant;
 use App\Models\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\LoyaltyRuleFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class LoyaltyRule extends Model
 {
-    /** @use HasFactory<\Database\Factories\LoyaltyRuleFactory> */
-    use HasFactory, HasUuid, BelongsToTenant, Auditable, SoftDeletes;
+    use Auditable;
+    use BelongsToTenant;
+
+    /** @use HasFactory<LoyaltyRuleFactory> */
+    use HasFactory;
+
+    use HasUuid;
+    use SoftDeletes;
 
     protected $fillable = [
         'tenant_id',
@@ -29,12 +36,12 @@ class LoyaltyRule extends Model
     ];
 
     protected $casts = [
-        'config' => 'json',
-        'is_active' => 'boolean',
+        'config'            => 'json',
+        'is_active'         => 'boolean',
         'stack_with_others' => 'boolean',
-        'priority' => 'integer',
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'priority'          => 'integer',
+        'start_date'        => 'date',
+        'end_date'          => 'date',
     ];
 
     public function programme(): BelongsTo

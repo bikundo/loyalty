@@ -1,15 +1,15 @@
 <?php
 
-use App\Actions\Fortify\CreateNewUser;
-use App\Models\Plan;
-use App\Models\Tenant;
-use App\Models\User;
 use App\Enums\Role;
+use Tests\TestCase;
+use App\Models\Plan;
+use App\Models\User;
+use App\Models\Tenant;
+use App\Actions\Fortify\CreateNewUser;
+use Illuminate\Validation\ValidationException;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 
-uses(RefreshDatabase::class);
 
 test('a new merchant can register and a tenant is created', function () {
     // 1. Seed foundation data
@@ -19,11 +19,11 @@ test('a new merchant can register and a tenant is created', function () {
     $action = new CreateNewUser();
 
     $input = [
-        'name' => 'John Doe',
-        'email' => 'john@example.com',
-        'password' => 'password123',
+        'name'                  => 'John Doe',
+        'email'                 => 'john@example.com',
+        'password'              => 'password123',
         'password_confirmation' => 'password123',
-        'business_name' => 'Johns Coffee',
+        'business_name'         => 'Johns Coffee',
     ];
 
     /** @var User $user */
@@ -54,10 +54,10 @@ test('registration requires a business name', function () {
     $action = new CreateNewUser();
 
     $input = [
-        'name' => 'John Doe',
-        'email' => 'john@example.com',
+        'name'     => 'John Doe',
+        'email'    => 'john@example.com',
         'password' => 'password123',
     ];
 
     $action->create($input);
-})->throws(\Illuminate\Validation\ValidationException::class);
+})->throws(ValidationException::class);

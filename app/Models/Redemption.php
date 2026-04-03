@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
 use App\Models\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\RedemptionFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Redemption extends Model
 {
-    /** @use HasFactory<\Database\Factories\RedemptionFactory> */
-    use HasFactory, HasUuid, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<RedemptionFactory> */
+    use HasFactory;
+
+    use HasUuid;
 
     protected $fillable = [
         'tenant_id',
@@ -30,9 +35,9 @@ class Redemption extends Model
     ];
 
     protected $casts = [
-        'points_used' => 'integer',
+        'points_used'  => 'integer',
         'confirmed_at' => 'datetime',
-        'rejected_at' => 'datetime',
+        'rejected_at'  => 'datetime',
     ];
 
     public function customer(): BelongsTo

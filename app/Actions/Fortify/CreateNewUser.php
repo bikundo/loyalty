@@ -2,18 +2,18 @@
 
 namespace App\Actions\Fortify;
 
-use App\Enums\Role as RoleEnum;
-use App\Models\LoyaltyProgram;
 use App\Models\Plan;
-use App\Models\Tenant;
-use App\Models\TenantSettings;
-use App\Models\SmsWallet;
 use App\Models\User;
-use App\Concerns\PasswordValidationRules;
-use App\Concerns\ProfileValidationRules;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Tenant;
+use App\Models\SmsWallet;
 use Illuminate\Support\Str;
+use App\Models\LoyaltyProgram;
+use App\Models\TenantSettings;
+use App\Enums\Role as RoleEnum;
+use Illuminate\Support\Facades\DB;
+use App\Concerns\ProfileValidationRules;
+use App\Concerns\PasswordValidationRules;
+use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
@@ -30,7 +30,7 @@ class CreateNewUser implements CreatesNewUsers
     {
         Validator::make($input, [
             ...$this->profileRules(),
-            'password' => $this->passwordRules(),
+            'password'      => $this->passwordRules(),
             'business_name' => ['required', 'string', 'max:255', 'unique:tenants,name'],
         ])->validate();
 
@@ -40,22 +40,22 @@ class CreateNewUser implements CreatesNewUsers
 
             // 2. Create Tenant
             $tenant = Tenant::create([
-                'name' => $input['business_name'],
-                'slug' => Str::slug($input['business_name']),
-                'subdomain' => Str::slug($input['business_name']),
-                'plan_id' => $plan->id,
-                'status' => 'active',
+                'name'               => $input['business_name'],
+                'slug'               => Str::slug($input['business_name']),
+                'subdomain'          => Str::slug($input['business_name']),
+                'plan_id'            => $plan->id,
+                'status'             => 'active',
                 'preferred_currency' => 'KES',
-                'timezone' => 'Africa/Nairobi',
-                'country_code' => 'KE',
+                'timezone'           => 'Africa/Nairobi',
+                'country_code'       => 'KE',
             ]);
 
             // 3. Create User attached to Tenant
             $user = User::create([
                 'tenant_id' => $tenant->id,
-                'name' => $input['name'],
-                'email' => $input['email'],
-                'password' => $input['password'],
+                'name'      => $input['name'],
+                'email'     => $input['email'],
+                'password'  => $input['password'],
             ]);
 
             // 4. Update tenant owner
@@ -63,19 +63,19 @@ class CreateNewUser implements CreatesNewUsers
 
             // 5. Initialize Tenant Defaults
             TenantSettings::create([
-                'tenant_id' => $tenant->id,
+                'tenant_id'      => $tenant->id,
                 'programme_name' => $tenant->name . ' Rewards',
-                'points_name' => 'Points',
+                'points_name'    => 'Points',
             ]);
 
             LoyaltyProgram::create([
                 'tenant_id' => $tenant->id,
-                'name' => 'Default Programme',
+                'name'      => 'Default Programme',
                 'is_active' => true,
             ]);
 
             SmsWallet::create([
-                'tenant_id' => $tenant->id,
+                'tenant_id'       => $tenant->id,
                 'credits_balance' => 0,
             ]);
 

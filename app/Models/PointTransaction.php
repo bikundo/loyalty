@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\PointTransactionFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PointTransaction extends Model
 {
-    /** @use HasFactory<\Database\Factories\PointTransactionFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<PointTransactionFactory> */
+    use HasFactory;
 
     public $timestamps = false;
 
@@ -35,10 +38,10 @@ class PointTransaction extends Model
     ];
 
     protected $casts = [
-        'points' => 'integer',
-        'balance_after' => 'integer',
+        'points'           => 'integer',
+        'balance_after'    => 'integer',
         'amount_spent_kes' => 'integer',
-        'created_at' => 'datetime',
+        'created_at'       => 'datetime',
     ];
 
     public function customer(): BelongsTo

@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\TenantSettingsFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class TenantSettings extends Model
 {
-    /** @use HasFactory<\Database\Factories\TenantSettingsFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<TenantSettingsFactory> */
+    use HasFactory;
 
     protected $fillable = [
         'tenant_id',
@@ -31,10 +34,10 @@ class TenantSettings extends Model
     ];
 
     protected $casts = [
-        'points_expiry_days' => 'integer',
-        'expiry_warning_days' => 'integer',
-        'enable_expiry_warning_sms' => 'boolean',
-        'enable_ussd_channel' => 'boolean',
+        'points_expiry_days'         => 'integer',
+        'expiry_warning_days'        => 'integer',
+        'enable_expiry_warning_sms'  => 'boolean',
+        'enable_ussd_channel'        => 'boolean',
         'low_wallet_alert_threshold' => 'integer',
     ];
 }

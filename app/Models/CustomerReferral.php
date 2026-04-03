@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\CustomerReferralFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CustomerReferral extends Model
 {
-    /** @use HasFactory<\Database\Factories\CustomerReferralFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<CustomerReferralFactory> */
+    use HasFactory;
 
     public $timestamps = false;
 
@@ -26,8 +29,8 @@ class CustomerReferral extends Model
 
     protected $casts = [
         'qualified_at' => 'datetime',
-        'credited_at' => 'datetime',
-        'created_at' => 'datetime',
+        'credited_at'  => 'datetime',
+        'created_at'   => 'datetime',
     ];
 
     public function referrer(): BelongsTo

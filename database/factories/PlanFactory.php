@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Plan;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Plan>
+ * @extends Factory<Plan>
  */
 class PlanFactory extends Factory
 {
@@ -20,22 +21,22 @@ class PlanFactory extends Factory
         $name = $this->faker->unique()->word();
 
         return [
-            'name' => ucfirst($name),
-            'slug' => Str::slug($name),
-            'price_amount' => $this->faker->numberBetween(1000, 100000),
-            'currency' => 'KES',
-            'billing_interval' => 'monthly',
+            'name'                       => ucfirst($name),
+            'slug'                       => Str::slug($name),
+            'price_amount'               => $this->faker->numberBetween(1000, 100000),
+            'currency'                   => 'KES',
+            'billing_interval'           => 'monthly',
             'sms_wallet_topup_bonus_pct' => $this->faker->numberBetween(0, 20),
-            'max_locations' => $this->faker->numberBetween(1, 10),
-            'max_cashiers' => $this->faker->numberBetween(1, 50),
-            'api_access_enabled' => $this->faker->boolean(),
-            'ussd_enabled' => $this->faker->boolean(),
-            'coalition_enabled' => $this->faker->boolean(),
-            'branded_app_enabled' => $this->faker->boolean(),
-            'rate_limit_per_day' => $this->faker->numberBetween(100, 1000),
-            'features' => ['Feature A', 'Feature B'],
-            'is_active' => true,
-            'sort_order' => $this->faker->numberBetween(1, 10),
+            'max_locations'              => $this->faker->numberBetween(1, 10),
+            'max_cashiers'               => $this->faker->numberBetween(1, 50),
+            'api_access_enabled'         => $this->faker->boolean(),
+            'ussd_enabled'               => $this->faker->boolean(),
+            'coalition_enabled'          => $this->faker->boolean(),
+            'branded_app_enabled'        => $this->faker->boolean(),
+            'rate_limit_per_day'         => $this->faker->numberBetween(100, 1000),
+            'features'                   => ['Feature A', 'Feature B'],
+            'is_active'                  => true,
+            'sort_order'                 => $this->faker->numberBetween(1, 10),
         ];
     }
 }

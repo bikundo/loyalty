@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Tenant;
 use App\Models\LoyaltyProgram;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,7 +19,11 @@ class LoyaltyProgramFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'tenant_id'           => Tenant::factory(),
+            'name'                => 'Full Rewards',
+            'points_to_kes_ratio' => 100, // 100 points = 1 KES
+            'expiry_days'         => 365,
+            'is_active'           => true,
         ];
     }
 }

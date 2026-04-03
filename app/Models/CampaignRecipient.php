@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Database\Factories\CampaignRecipientFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CampaignRecipient extends Model
 {
-    /** @use HasFactory<\Database\Factories\CampaignRecipientFactory> */
+    /** @use HasFactory<CampaignRecipientFactory> */
     use HasFactory;
 
     public $timestamps = false;
@@ -24,10 +25,10 @@ class CampaignRecipient extends Model
     ];
 
     protected $casts = [
-        'sent_at' => 'datetime',
+        'sent_at'      => 'datetime',
         'delivered_at' => 'datetime',
-        'failed_at' => 'datetime',
-        'created_at' => 'datetime',
+        'failed_at'    => 'datetime',
+        'created_at'   => 'datetime',
     ];
 
     public function campaign(): BelongsTo

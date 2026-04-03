@@ -2,17 +2,23 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
 use App\Models\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\TenantLocationFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class TenantLocation extends Model
 {
-    /** @use HasFactory<\Database\Factories\TenantLocationFactory> */
-    use HasFactory, BelongsToTenant, HasUuid, SoftDeletes;
+    use BelongsToTenant;
+
+    /** @use HasFactory<TenantLocationFactory> */
+    use HasFactory;
+
+    use HasUuid;
+    use SoftDeletes;
 
     protected $fillable = [
         'tenant_id',

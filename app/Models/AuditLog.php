@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Database\Factories\AuditLogFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AuditLog extends Model
 {
-    /** @use HasFactory<\Database\Factories\AuditLogFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<AuditLogFactory> */
+    use HasFactory;
 
     public $timestamps = false;
 
@@ -33,7 +36,7 @@ class AuditLog extends Model
     protected $casts = [
         'old_values' => 'json',
         'new_values' => 'json',
-        'tags' => 'json',
+        'tags'       => 'json',
         'created_at' => 'datetime',
     ];
 
@@ -53,16 +56,16 @@ class AuditLog extends Model
     public static function record(Model $model, string $action, ?array $before, ?array $after): void
     {
         self::create([
-            'tenant_id' => $model->tenant_id ?? app('tenant.context')->id(),
-            'user_id' => auth()->id(),
+            'tenant_id'      => $model->tenant_id ?? app('tenant.context')->id(),
+            'user_id'        => auth()->id(),
             'auditable_type' => get_class($model),
-            'auditable_id' => $model->getKey(),
-            'event' => $action,
-            'old_values' => $before,
-            'new_values' => $after,
-            'url' => request()->fullUrl(),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
+            'auditable_id'   => $model->getKey(),
+            'event'          => $action,
+            'old_values'     => $before,
+            'new_values'     => $after,
+            'url'            => request()->fullUrl(),
+            'ip_address'     => request()->ip(),
+            'user_agent'     => request()->userAgent(),
         ]);
     }
 }

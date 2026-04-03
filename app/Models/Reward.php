@@ -2,19 +2,26 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToTenant;
 use App\Models\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Concerns\Auditable;
+use Database\Factories\RewardFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Reward extends Model
 {
-    /** @use HasFactory<\Database\Factories\RewardFactory> */
-    use HasFactory, HasUuid, BelongsToTenant, Auditable, SoftDeletes;
+    use Auditable;
+    use BelongsToTenant;
+
+    /** @use HasFactory<RewardFactory> */
+    use HasFactory;
+
+    use HasUuid;
+    use SoftDeletes;
 
     protected $fillable = [
         'tenant_id',
@@ -35,15 +42,15 @@ class Reward extends Model
     ];
 
     protected $casts = [
-        'points_required' => 'integer',
-        'discount_value_kes' => 'integer',
-        'discount_percentage' => 'integer',
+        'points_required'              => 'integer',
+        'discount_value_kes'           => 'integer',
+        'discount_percentage'          => 'integer',
         'max_redemptions_per_customer' => 'integer',
-        'max_redemptions_total' => 'integer',
-        'redemptions_count' => 'integer',
-        'is_active' => 'boolean',
-        'sort_order' => 'integer',
-        'expires_at' => 'date',
+        'max_redemptions_total'        => 'integer',
+        'redemptions_count'            => 'integer',
+        'is_active'                    => 'boolean',
+        'sort_order'                   => 'integer',
+        'expires_at'                   => 'date',
     ];
 
     public function programme(): BelongsTo

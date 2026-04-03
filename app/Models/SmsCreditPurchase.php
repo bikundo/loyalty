@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\SmsCreditPurchaseFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SmsCreditPurchase extends Model
 {
-    /** @use HasFactory<\Database\Factories\SmsCreditPurchaseFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<SmsCreditPurchaseFactory> */
+    use HasFactory;
 
     public $timestamps = false;
 
@@ -28,8 +31,8 @@ class SmsCreditPurchase extends Model
 
     protected $casts = [
         'credits_purchased' => 'integer',
-        'amount_paid' => 'integer',
-        'created_at' => 'datetime',
+        'amount_paid'       => 'integer',
+        'created_at'        => 'datetime',
     ];
 
     public function wallet(): BelongsTo

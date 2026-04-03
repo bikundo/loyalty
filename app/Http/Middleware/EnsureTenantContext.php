@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
+use App\Services\TenantContext;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureTenantContext
@@ -14,11 +14,11 @@ class EnsureTenantContext
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $this->context->isSet()) {
+        if (!$this->context->isSet()) {
             // If we are on a login/registration route, we might allow it
             // but for dashboard/API routes, we abort.
             abort(Response::HTTP_NOT_FOUND, 'Tenant context not resolved.');

@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
 use App\Models\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\PaymentTransactionFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PaymentTransaction extends Model
 {
-    /** @use HasFactory<\Database\Factories\PaymentTransactionFactory> */
-    use HasFactory, HasUuid, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<PaymentTransactionFactory> */
+    use HasFactory;
+
+    use HasUuid;
 
     protected $fillable = [
         'tenant_id',
@@ -27,7 +32,7 @@ class PaymentTransaction extends Model
     ];
 
     protected $casts = [
-        'amount' => 'integer',
+        'amount'           => 'integer',
         'gateway_response' => 'json',
     ];
 

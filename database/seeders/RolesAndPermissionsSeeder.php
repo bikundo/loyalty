@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Permission as PermissionEnum;
 use App\Enums\Role as RoleEnum;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
+use App\Enums\Permission as PermissionEnum;
 
 class RolesAndPermissionsSeeder extends Seeder
 {

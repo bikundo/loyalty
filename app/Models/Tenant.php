@@ -2,19 +2,25 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\Auditable;
 use App\Models\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Concerns\Auditable;
+use Database\Factories\TenantFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Tenant extends Model
 {
-    /** @use HasFactory<\Database\Factories\TenantFactory> */
-    use HasFactory, HasUuid, Auditable, SoftDeletes;
+    use Auditable;
+
+    /** @use HasFactory<TenantFactory> */
+    use HasFactory;
+
+    use HasUuid;
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -32,7 +38,7 @@ class Tenant extends Model
 
     protected $casts = [
         'trial_ends_at' => 'datetime',
-        'suspended_at' => 'datetime',
+        'suspended_at'  => 'datetime',
     ];
 
     public function plan(): BelongsTo

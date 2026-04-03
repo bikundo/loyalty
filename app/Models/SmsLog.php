@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Database\Factories\SmsLogFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SmsLog extends Model
 {
-    /** @use HasFactory<\Database\Factories\SmsLogFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<SmsLogFactory> */
+    use HasFactory;
 
     public $timestamps = false;
 
@@ -35,12 +38,12 @@ class SmsLog extends Model
     ];
 
     protected $casts = [
-        'phone' => 'encrypted',
+        'phone'        => 'encrypted',
         'credits_used' => 'integer',
-        'sent_at' => 'datetime',
+        'sent_at'      => 'datetime',
         'delivered_at' => 'datetime',
-        'failed_at' => 'datetime',
-        'created_at' => 'datetime',
+        'failed_at'    => 'datetime',
+        'created_at'   => 'datetime',
     ];
 
     public function customer(): BelongsTo

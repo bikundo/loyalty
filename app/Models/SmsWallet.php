@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\SmsWalletFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SmsWallet extends Model
 {
-    /** @use HasFactory<\Database\Factories\SmsWalletFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<SmsWalletFactory> */
+    use HasFactory;
 
     protected $fillable = [
         'tenant_id',
@@ -21,9 +24,9 @@ class SmsWallet extends Model
     ];
 
     protected $casts = [
-        'credits_balance' => 'integer',
-        'credits_reserved' => 'integer',
-        'credits_used_total' => 'integer',
+        'credits_balance'        => 'integer',
+        'credits_reserved'       => 'integer',
+        'credits_used_total'     => 'integer',
         'low_balance_alerted_at' => 'datetime',
     ];
 

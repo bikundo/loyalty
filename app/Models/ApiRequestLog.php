@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\ApiRequestLogFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ApiRequestLog extends Model
 {
-    /** @use HasFactory<\Database\Factories\ApiRequestLogFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<ApiRequestLogFactory> */
+    use HasFactory;
 
     public $timestamps = false;
 
@@ -27,10 +30,10 @@ class ApiRequestLog extends Model
     ];
 
     protected $casts = [
-        'status_code' => 'integer',
+        'status_code'      => 'integer',
         'response_time_ms' => 'integer',
-        'request_body' => 'json',
-        'created_at' => 'datetime',
+        'request_body'     => 'json',
+        'created_at'       => 'datetime',
     ];
 
     public function apiKey(): BelongsTo

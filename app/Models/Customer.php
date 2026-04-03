@@ -2,19 +2,26 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\Auditable;
-use App\Models\Concerns\BelongsToTenant;
 use App\Models\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Concerns\Auditable;
+use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Customer extends Model
 {
-    /** @use HasFactory<\Database\Factories\CustomerFactory> */
-    use HasFactory, BelongsToTenant, HasUuid, Auditable, SoftDeletes;
+    use Auditable;
+    use BelongsToTenant;
+
+    /** @use HasFactory<CustomerFactory> */
+    use HasFactory;
+
+    use HasUuid;
+    use SoftDeletes;
 
     protected $fillable = [
         'tenant_id',
@@ -38,15 +45,15 @@ class Customer extends Model
      * Critical: Phone and name are encrypted at the application layer.
      */
     protected $casts = [
-        'phone' => 'encrypted',
-        'name' => 'encrypted',
-        'date_of_birth' => 'date',
-        'total_points' => 'integer',
+        'phone'                  => 'encrypted',
+        'name'                   => 'encrypted',
+        'date_of_birth'          => 'date',
+        'total_points'           => 'integer',
         'lifetime_points_earned' => 'integer',
-        'lifetime_spend_kes' => 'integer',
-        'total_visits' => 'integer',
-        'last_visit_at' => 'datetime',
-        'enrolled_at' => 'datetime',
+        'lifetime_spend_kes'     => 'integer',
+        'total_visits'           => 'integer',
+        'last_visit_at'          => 'datetime',
+        'enrolled_at'            => 'datetime',
     ];
 
     public function pointTransactions(): HasMany

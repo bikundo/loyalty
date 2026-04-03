@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\Role;
 use App\Models\User;
+use App\Models\Tenant;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -25,6 +27,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            'tenant_id'                 => null, // Null = Platform Admin
             'name'                      => fake()->name(),
             'email'                     => fake()->unique()->safeEmail(),
             'email_verified_at'         => now(),
@@ -34,6 +37,29 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at'   => null,
         ];
+    }
+
+    /**
+     * Indicate that the user is a super admin.
+     */
+    public function superAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => null,
+            'email'     => 'admin@loyaltyos.africa',
+        ])->afterCreating(function (User $user) {
+            $user->assignRole(Role::SuperAdmin->value);
+        });
+    }
+
+    /**
+     * Indicate that the user belongs to a tenant.
+     */
+    public function forTenant(Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenant->id,
+        ]);
     }
 
     /**

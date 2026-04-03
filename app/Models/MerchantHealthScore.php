@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\MerchantHealthScoreFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class MerchantHealthScore extends Model
 {
-    /** @use HasFactory<\Database\Factories\MerchantHealthScoreFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<MerchantHealthScoreFactory> */
+    use HasFactory;
 
     protected $fillable = [
         'tenant_id',
@@ -19,8 +22,8 @@ class MerchantHealthScore extends Model
     ];
 
     protected $casts = [
-        'score' => 'integer',
-        'metrics' => 'json',
+        'score'               => 'integer',
+        'metrics'             => 'json',
         'calculated_for_date' => 'date',
     ];
 }

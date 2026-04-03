@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\CustomerConsentFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CustomerConsent extends Model
 {
-    /** @use HasFactory<\Database\Factories\CustomerConsentFactory> */
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant;
+
+    /** @use HasFactory<CustomerConsentFactory> */
+    use HasFactory;
 
     public $timestamps = false;
 
@@ -28,8 +31,8 @@ class CustomerConsent extends Model
 
     protected $casts = [
         'consented_at' => 'datetime',
-        'revoked_at' => 'datetime',
-        'created_at' => 'datetime',
+        'revoked_at'   => 'datetime',
+        'created_at'   => 'datetime',
     ];
 
     public function customer(): BelongsTo

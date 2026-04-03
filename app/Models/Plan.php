@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\Auditable;
 use App\Models\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Concerns\Auditable;
+use Database\Factories\PlanFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Plan extends Model
 {
-    /** @use HasFactory<\Database\Factories\PlanFactory> */
-    use HasFactory, HasUuid, Auditable;
+    use Auditable;
+
+    /** @use HasFactory<PlanFactory> */
+    use HasFactory;
+
+    use HasUuid;
 
     protected $fillable = [
         'name',
@@ -33,18 +38,18 @@ class Plan extends Model
     ];
 
     protected $casts = [
-        'price_amount' => 'integer',
+        'price_amount'               => 'integer',
         'sms_wallet_topup_bonus_pct' => 'integer',
-        'max_locations' => 'integer',
-        'max_cashiers' => 'integer',
-        'api_access_enabled' => 'boolean',
-        'ussd_enabled' => 'boolean',
-        'coalition_enabled' => 'boolean',
-        'branded_app_enabled' => 'boolean',
-        'rate_limit_per_day' => 'integer',
-        'features' => 'json',
-        'is_active' => 'boolean',
-        'sort_order' => 'integer',
+        'max_locations'              => 'integer',
+        'max_cashiers'               => 'integer',
+        'api_access_enabled'         => 'boolean',
+        'ussd_enabled'               => 'boolean',
+        'coalition_enabled'          => 'boolean',
+        'branded_app_enabled'        => 'boolean',
+        'rate_limit_per_day'         => 'integer',
+        'features'                   => 'json',
+        'is_active'                  => 'boolean',
+        'sort_order'                 => 'integer',
     ];
 
     public function tenants(): HasMany
