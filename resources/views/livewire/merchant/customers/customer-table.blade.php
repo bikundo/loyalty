@@ -49,7 +49,7 @@
         </flux:table>
 
         <div>
-            {{ $customers->links() }}
+            <flux:pagination :paginator="$customers" />
         </div>
     </div>
 

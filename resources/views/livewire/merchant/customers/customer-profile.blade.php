@@ -80,9 +80,7 @@
             </flux:table.rows>
         </flux:table>
 
-        <div class="mt-4">
-            {{ $transactions->links() }}
-        </div>
+        <flux:pagination :paginator="$transactions" />
     </flux:card>
 
     <livewire:merchant.customers.award-points-form :customer="$customer" />
