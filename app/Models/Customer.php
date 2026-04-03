@@ -26,6 +26,7 @@ class Customer extends Model
     protected $fillable = [
         'tenant_id',
         'phone',
+        'phone_index',
         'name',
         'date_of_birth',
         'status',
@@ -40,6 +41,46 @@ class Customer extends Model
         'enrolled_at',
         'referred_by_customer_id',
     ];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($customer) {
+            if ($customer->isDirty('phone')) {
+                // Blind Index hashing for deterministic searching on encrypted phone.
+                $customer->phone_index = hash_hmac('sha256', $customer->phone, config('app.key'));
+            }
+
+            if ($customer->isDirty('name')) {
+                // Blind Index hashing for deterministic searching on encrypted name.
+                // We lowercase it to allow case-insensitive exact matching.
+                $customer->name_index = hash_hmac('sha256', mb_strtolower($customer->name), config('app.key'));
+            }
+        });
+    }
+
+    public function scopeSearch($query, $search)
+    {
+        return $query->when($search, function ($query, $search) {
+            $search = trim($search);
+
+            // Blind Index lookup for exact match.
+            // We check both phone and name indexes.
+            $phoneHash = hash_hmac('sha256', $search, config('app.key'));
+            $nameHash = hash_hmac('sha256', mb_strtolower($search), config('app.key'));
+
+            return $query->where(function ($q) use ($phoneHash, $nameHash) {
+                $q->where('phone_index', $phoneHash)
+                    ->orWhere('name_index', $nameHash);
+            });
+        });
+    }
+
+    public function scopeForStatus($query, $status)
+    {
+        return $query->when($status, fn($q) => $q->where('status', $status));
+    }
 
     /**
      * Critical: Phone and name are encrypted at the application layer.

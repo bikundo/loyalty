@@ -39,6 +39,8 @@ class CustomerTable extends Component
         $tenant = $tenantContext->current();
 
         $customers = Customer::where('tenant_id', $tenant->id)
+            ->search($this->search)
+            ->forStatus($this->status)
             ->latest()
             ->paginate(10);
 
