@@ -1,0 +1,54 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "simplified_null_return": true,
+        "array_indentation": false,
+        "new_with_parentheses": true,
+        "concat_space": {
+            "spacing": "one"
+        },
+        "no_spaces_inside_parenthesis": true,
+        "single_line_empty_body": true,
+        "braces_position": {
+            "allow_single_line_anonymous_functions": true,
+            "control_structures_opening_brace": "same_line",
+            "functions_opening_brace": "next_line_unless_newline_at_signature_end",
+            "anonymous_functions_opening_brace": "same_line",
+            "classes_opening_brace": "next_line_unless_newline_at_signature_end",
+            "anonymous_classes_opening_brace": "next_line_unless_newline_at_signature_end",
+            "allow_single_line_empty_anonymous_classes": true
+        },
+        "ordered_imports": {
+            "sort_algorithm": "length",
+            "imports_order": [
+                "class",
+                "const",
+                "function"
+            ]
+        },
+        "global_namespace_import": {
+            "import_classes": true,
+            "import_constants": true,
+            "import_functions": true
+        },
+        "binary_operator_spaces": {
+            "operators": {
+                "=>": "align"
+            }
+        },
+        "control_structure_continuation_position": {
+            "position": "next_line"
+        },
+        "control_structure_braces": true,
+        "function_declaration": false,
+        "single_trait_insert_per_statement": true,
+        "no_multiple_statements_per_line": true,
+        "single_blank_line_at_eof": true,
+        "class_definition": false,
+        "single_space_around_construct": true,
+        "not_operator_with_successor_space": false,
+        "blank_lines_before_namespace": true,
+        "blank_line_after_namespace": true,
+        "no_unused_imports": true
+    }
+}
