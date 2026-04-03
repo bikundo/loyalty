@@ -11,7 +11,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->web(append: [
+            \App\Http\Middleware\ResolveTenant::class,
+        ]);
+
+        $middleware->api(append: [
+            \App\Http\Middleware\ResolveTenant::class,
+        ]);
+
+        $middleware->alias([
+            'tenant' => \App\Http\Middleware\EnsureTenantContext::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
