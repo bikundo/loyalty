@@ -97,7 +97,10 @@ return [
     */
 
     'waits' => [
+        // Alert when high-priority jobs wait more than 10 seconds
+        'redis:high'    => 10,
         'redis:default' => 60,
+        'redis:low'     => 120,
     ],
 
     /*
@@ -197,33 +200,96 @@ return [
     */
 
     'defaults' => [
-        'supervisor-1' => [
+
+        /**
+         * High priority: point awards, transactional SMS.
+         * Time-sensitive — customer is waiting at the counter.
+         */
+        'high-priority' => [
+            'connection'          => 'redis',
+            'queue'               => ['high'],
+            'balance'             => 'auto',
+            'autoScalingStrategy' => 'time',
+            'minProcesses'        => 1,
+            'maxProcesses'        => 4,
+            'maxTime'             => 0,
+            'maxJobs'             => 0,
+            'memory'              => 128,
+            'tries'               => 3,
+            'timeout'             => 30,
+            'nice'                => 0,
+        ],
+
+        /**
+         * Default priority: campaign dispatch, payment processing, webhooks.
+         */
+        'default-priority' => [
             'connection'          => 'redis',
             'queue'               => ['default'],
             'balance'             => 'auto',
             'autoScalingStrategy' => 'time',
-            'maxProcesses'        => 1,
+            'minProcesses'        => 1,
+            'maxProcesses'        => 6,
+            'maxTime'             => 0,
+            'maxJobs'             => 0,
+            'memory'              => 128,
+            'tries'               => 3,
+            'timeout'             => 120,
+            'nice'                => 0,
+        ],
+
+        /**
+         * Low priority: expiry engine, analytics, data purge, health scores.
+         * Background jobs — can be delayed without customer impact.
+         */
+        'low-priority' => [
+            'connection'          => 'redis',
+            'queue'               => ['low'],
+            'balance'             => 'simple',
+            'autoScalingStrategy' => 'time',
+            'minProcesses'        => 1,
+            'maxProcesses'        => 2,
             'maxTime'             => 0,
             'maxJobs'             => 0,
             'memory'              => 128,
             'tries'               => 1,
-            'timeout'             => 60,
-            'nice'                => 0,
+            'timeout'             => 300,
+            'nice'                => 10,
         ],
     ],
 
     'environments' => [
         'production' => [
-            'supervisor-1' => [
-                'maxProcesses'    => 10,
-                'balanceMaxShift' => 1,
+            'high-priority' => [
+                'minProcesses'    => 2,
+                'maxProcesses'    => 8,
+                'balanceMaxShift' => 2,
                 'balanceCooldown' => 3,
+            ],
+            'default-priority' => [
+                'minProcesses'    => 2,
+                'maxProcesses'    => 12,
+                'balanceMaxShift' => 2,
+                'balanceCooldown' => 3,
+            ],
+            'low-priority' => [
+                'minProcesses'    => 1,
+                'maxProcesses'    => 3,
             ],
         ],
 
         'local' => [
-            'supervisor-1' => [
+            'high-priority' => [
+                'minProcesses' => 1,
+                'maxProcesses' => 2,
+            ],
+            'default-priority' => [
+                'minProcesses' => 1,
                 'maxProcesses' => 3,
+            ],
+            'low-priority' => [
+                'minProcesses' => 1,
+                'maxProcesses' => 1,
             ],
         ],
     ],

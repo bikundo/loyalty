@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\User;
+use App\Models\Cashier;
+use App\Models\Customer;
 
 return [
 
@@ -42,6 +44,24 @@ return [
             'driver'   => 'session',
             'provider' => 'users',
         ],
+
+        // Counter staff — PIN-only auth, scanner app
+        'cashier' => [
+            'driver'   => 'session',
+            'provider' => 'cashiers',
+        ],
+
+        // End consumers — phone OTP auth, customer app
+        'customer' => [
+            'driver'   => 'session',
+            'provider' => 'customers',
+        ],
+
+        // Public API — API key / OAuth2 bearer token
+        'api' => [
+            'driver'   => 'sanctum',
+            'provider' => 'users',
+        ],
     ],
 
     /*
@@ -67,10 +87,15 @@ return [
             'model'  => env('AUTH_MODEL', User::class),
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'cashiers' => [
+            'driver' => 'eloquent',
+            'model'  => Cashier::class,
+        ],
+
+        'customers' => [
+            'driver' => 'eloquent',
+            'model'  => Customer::class,
+        ],
     ],
 
     /*
