@@ -38,7 +38,6 @@ class SmsLog extends Model
     ];
 
     protected $casts = [
-        'phone'        => 'encrypted',
         'credits_used' => 'integer',
         'sent_at'      => 'datetime',
         'delivered_at' => 'datetime',

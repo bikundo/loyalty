@@ -25,24 +25,10 @@ class EnrolmentForm extends Component
                 'required',
                 'string',
                 'max:50',
-                // Cannot easily use database unique rule because phone is encrypted.
-                // We'll need to fetch and compare, or just allow it and let the database
-                // fail if it's uniquely indexed with a blind index, but for this basic iteration
-                // we'll just check if it exists in the collection as an example, though in real life
-                // one would use deterministic encryption or blind index for unique check.
-                // For now, let's keep it simple.
+                Rule::unique('customers', 'phone')->where('tenant_id', $tenant->id),
             ],
             'date_of_birth' => 'nullable|date',
         ]);
-
-        // Attempt to prevent naive duplicates in memory
-        $exists = Customer::where('tenant_id', $tenant->id)->get()->contains('phone', $this->phone);
-
-        if ($exists) {
-            $this->addError('phone', 'This phone number is already enrolled.');
-
-            return;
-        }
 
         Customer::create([
             'tenant_id'         => $tenant->id,

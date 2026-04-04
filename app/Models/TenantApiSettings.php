@@ -27,6 +27,5 @@ class TenantApiSettings extends Model
         'api_access_enabled' => 'boolean',
         'rate_limit_per_day' => 'integer',
         'webhook_events'     => 'json',
-        'webhook_secret'     => 'encrypted',
     ];
 }
