@@ -24,6 +24,7 @@ class CustomerProfile extends Component
     }
 
     #[On('points-awarded')]
+    #[On('redemption-created')]
     public function refreshCustomer()
     {
         $this->customer->refresh();

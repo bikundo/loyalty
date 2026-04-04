@@ -10,8 +10,11 @@
         
         <div class="flex gap-2">
             <flux:button icon="pencil" variant="ghost">Edit</flux:button>
+            <flux:modal.trigger name="redeem-reward-modal">
+                <flux:button icon="gift-top" variant="primary">Redeem Reward</flux:button>
+            </flux:modal.trigger>
             <flux:modal.trigger name="award-points-modal">
-                <flux:button icon="gift" variant="primary">Award Points</flux:button>
+                <flux:button icon="plus" variant="filled">Award Points</flux:button>
             </flux:modal.trigger>
         </div>
     </div>
@@ -84,4 +87,5 @@
     </flux:card>
 
     <livewire:merchant.customers.award-points-form :customer="$customer" />
+    <livewire:merchant.customers.redeem-reward-form :customer="$customer" />
 </div>
