@@ -5,20 +5,17 @@ namespace App\Models;
 use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Concerns\BelongsToTenant;
-use Database\Factories\RedemptionFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Redemption extends Model
 {
     use BelongsToTenant;
-
-    /** @use HasFactory<RedemptionFactory> */
     use HasFactory;
-
     use HasUuid;
 
     protected $fillable = [
+        'uuid',
         'tenant_id',
         'customer_id',
         'reward_id',

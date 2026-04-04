@@ -3,6 +3,7 @@
 namespace App\Models\Concerns;
 
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Auto-generates a UUID on model creation and uses it as the route key.

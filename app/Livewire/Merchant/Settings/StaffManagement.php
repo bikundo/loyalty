@@ -3,21 +3,25 @@
 namespace App\Livewire\Merchant\Settings;
 
 use Flux\Flux;
-use Livewire\Component;
 use App\Models\Cashier;
+use Livewire\Component;
 use App\Models\TenantLocation;
 use App\Services\TenantContext;
 use Livewire\Attributes\Layout;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 
 class StaffManagement extends Component
 {
     public $staffId;
+
     public $name;
+
     public $pin;
+
     public $locationId;
+
     public $dailyCap = 50000;
+
     public $isActive = true;
 
     public $showStaffModal = false;
@@ -52,12 +56,12 @@ class StaffManagement extends Component
 
     public function editStaff(Cashier $staff)
     {
-        $this->staffId    = $staff->id;
-        $this->name       = $staff->name;
+        $this->staffId = $staff->id;
+        $this->name = $staff->name;
         $this->locationId = $staff->tenant_location_id;
-        $this->dailyCap   = $staff->daily_award_cap_kes;
-        $this->isActive   = $staff->is_active;
-        $this->pin        = ''; // Don't show hashed PIN
+        $this->dailyCap = $staff->daily_award_cap_kes;
+        $this->isActive = $staff->is_active;
+        $this->pin = ''; // Don't show hashed PIN
 
         $this->showStaffModal = true;
     }
@@ -70,7 +74,7 @@ class StaffManagement extends Component
 
         $data = [
             'tenant_id'           => $tenant->id,
-            'tenant_location_id'  => $this->locationId,
+            'tenant_location_id'  => $this->locationId ?: null,
             'name'                => $this->name,
             'daily_award_cap_kes' => $this->dailyCap,
             'is_active'           => $this->isActive,
@@ -83,7 +87,7 @@ class StaffManagement extends Component
         Cashier::updateOrCreate(['id' => $this->staffId], $data);
 
         $this->showStaffModal = false;
-        
+
         Flux::toast(
             $this->staffId ? 'Staff updated successfully.' : 'Staff created successfully.'
         );

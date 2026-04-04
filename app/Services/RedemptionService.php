@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use Exception;
 use App\Models\Reward;
+use App\Models\Tenant;
 use App\Models\Customer;
 use App\Models\Redemption;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 use App\Models\PointTransaction;
 use App\Services\Sms\SmsService;
 use Illuminate\Support\Facades\DB;
@@ -19,67 +20,60 @@ class RedemptionService
     ) {}
 
     /**
-     * Process a redemption for a customer and a reward.
+     * Handle the atomic point-based redemption of a reward.
      */
-    public function redeem(Customer $customer, Reward $reward, ?int $userId = null, ?int $cashierId = null, array $meta = []): Redemption
+    public function handle(Tenant $tenant, Customer $customer, Reward $reward, array $meta = []): Redemption
     {
-        if ($reward->tenant_id !== $customer->tenant_id) {
-            throw new InvalidArgumentException('Unauthorized reward selection for this customer');
-        }
-
-        if ($customer->total_points < $reward->points_required) {
-            throw new InvalidArgumentException('Insufficient points');
-        }
-
-        return DB::transaction(function () use ($customer, $reward, $userId, $cashierId, $meta) {
-            // 1. Lock customer for safe point deduction
+        return DB::transaction(function () use ($tenant, $customer, $reward, $meta) {
+            // Re-fetch customer with lock for safe points decrement
             $customer = Customer::lockForUpdate()->find($customer->id);
 
-            $pointsBefore = $customer->total_points;
-            $pointsRequired = $reward->points_required;
-            $newBalance = $pointsBefore - $pointsRequired;
+            if ($customer->total_points < $reward->points_required) {
+                throw new Exception("Insufficient points. Customer has {$customer->total_points} total points, but {$reward->name} requires {$reward->points_required}.");
+            }
 
-            // 2. Create Point Transaction Ledger Entry (Debit)
-            PointTransaction::create([
-                'tenant_id'            => $customer->tenant_id,
+            // 1. Create Point Transaction (Redeem type)
+            // Note: HasUuid trait handles the 'uuid' field via the 'creating' event.
+            $transaction = PointTransaction::create([
+                'tenant_id'            => $tenant->id,
                 'customer_id'          => $customer->id,
-                'tenant_location_id'   => $meta['tenant_location_id'] ?? null,
-                'type'                 => 'redemption',
-                'points'               => -$pointsRequired,
-                'balance_after'        => $newBalance,
-                'triggered_by_user_id' => $userId ?? Auth::id(),
-                'triggered_by'         => $cashierId ? 'cashier' : 'merchant',
+                'tenant_location_id'   => $meta['location_id'] ?? null,
+                'type'                 => 'redeem',
+                'points'               => $reward->points_required,
+                'balance_after'        => $customer->total_points - $reward->points_required,
+                'note'                 => $meta['note'] ?? "Redeemed for: {$reward->name}",
+                'triggered_by'         => $meta['triggered_by'] ?? 'merchant_portal',
+                'triggered_by_user_id' => $meta['user_id'] ?? Auth::id(),
                 'idempotency_key'      => Str::uuid()->toString(),
-                'note'                 => $meta['note'] ?? "Redemption: {$reward->name}",
                 'created_at'           => now(),
             ]);
 
-            // 3. Create Redemption Record
+            // 2. Create Redemption Record
             $redemption = Redemption::create([
-                'tenant_id'               => $customer->tenant_id,
-                'customer_id'             => $customer->id,
-                'reward_id'               => $reward->id,
-                'tenant_location_id'      => $meta['tenant_location_id'] ?? null,
-                'status'                  => 'confirmed',
-                'points_used'             => $pointsRequired,
-                'initiated_by_cashier_id' => $cashierId,
-                'confirmed_by_cashier_id' => $cashierId,
-                'confirmed_by_user_id'    => $userId ?? Auth::id(),
-                'confirmed_at'            => now(),
+                'tenant_id'            => $tenant->id,
+                'customer_id'          => $customer->id,
+                'reward_id'            => $reward->id,
+                'tenant_location_id'   => $meta['location_id'] ?? null,
+                'point_transaction_id' => $transaction->id,
+                'status'               => 'confirmed',
+                'points_used'          => $reward->points_required,
+                'confirmed_at'         => now(),
+                'confirmed_by_user_id' => $meta['user_id'] ?? Auth::id(),
             ]);
 
-            // 4. Update Customer Ledger Stats
-            $customer->total_points = $newBalance;
-            $customer->lifetime_points_redeemed += $pointsRequired;
+            // 3. Update Customer Balance
+            $customer->total_points -= $reward->points_required;
+            $customer->total_visits += 1;
+            $customer->last_visit_at = now();
             $customer->save();
 
-            // 5. Update Reward Stats
+            // 4. Update Reward Stats
             $reward->increment('redemptions_count');
 
-            // 6. Dispatch SMS Notification
+            // 5. Send Confirmation SMS
             $this->smsService->sendToCustomer(
                 $customer,
-                "Redemption Success! You've redeemed {$reward->name} at {$customer->tenant->name}. New Balance: {$customer->total_points}.",
+                "Redemption Successful! You've redeemed {$reward->name} for {$reward->points_required} points. Your new balance is {$customer->total_points}.",
                 ['triggered_by' => 'redemption_service']
             );
 

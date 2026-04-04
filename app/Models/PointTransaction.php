@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Concerns\BelongsToTenant;
 use Database\Factories\PointTransactionFactory;
@@ -11,13 +12,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class PointTransaction extends Model
 {
     use BelongsToTenant;
-
     /** @use HasFactory<PointTransactionFactory> */
     use HasFactory;
+
+    use HasUuid;
 
     public $timestamps = false;
 
     protected $fillable = [
+        'uuid',
         'tenant_id',
         'customer_id',
         'tenant_location_id',

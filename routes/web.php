@@ -4,10 +4,11 @@ use App\Http\Responses\LoginResponse;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Merchant\Campaigns\CampaignIndex;
 use App\Livewire\Merchant\Customers\CustomerTable;
+use App\Livewire\Merchant\Rewards\RewardManagement;
+use App\Livewire\Merchant\Settings\StaffManagement;
 use App\Livewire\Merchant\Customers\CustomerProfile;
 use App\Livewire\Cashier\Dashboard as CashierDashboard;
 use App\Livewire\Merchant\Dashboard as MerchantDashboard;
-use App\Livewire\Merchant\Settings\StaffManagement;
 
 Route::get('/', function () {
     return view('welcome');
@@ -23,7 +24,7 @@ Route::middleware(['auth', 'tenant'])->prefix('admin')->group(function () {
 
     Route::get('/customers', CustomerTable::class)->name('admin.customers');
     Route::get('/customers/{customer}', CustomerProfile::class)->name('admin.customers.show');
-    Route::get('/rewards', function () { return 'Rewards Management coming soon'; })->name('admin.rewards');
+    Route::get('/rewards', RewardManagement::class)->name('admin.rewards');
     Route::get('/campaigns', CampaignIndex::class)->name('admin.campaigns');
     Route::get('/settings', StaffManagement::class)->name('admin.settings');
 });

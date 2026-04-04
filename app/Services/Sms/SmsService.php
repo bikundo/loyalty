@@ -9,6 +9,8 @@ use App\Models\SmsWallet;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use App\Notifications\LowSmsBalanceNotification;
 
 class SmsService
 {
@@ -71,6 +73,9 @@ class SmsService
                     'provider_message_id' => $result['messageId'],
                     'sent_at'             => now(),
                 ]);
+
+                // Check for low balance alert
+                $this->checkLowBalance($tenant, $wallet);
             }
             else {
                 $log->update([
@@ -81,5 +86,25 @@ class SmsService
 
             return $log;
         });
+    }
+
+    /**
+     * Check if the wallet balance is low and notify the owner (with 24h throttling).
+     */
+    protected function checkLowBalance(Tenant $tenant, SmsWallet $wallet): void
+    {
+        $settings = $tenant->settings;
+        $threshold = $settings->low_wallet_alert_threshold ?? 50;
+
+        if ($wallet->credits_balance <= $threshold) {
+            $lockKey = "low_sms_alert_{$tenant->id}";
+
+            if (!Cache::has($lockKey)) {
+                $tenant->owner->notify(new LowSmsBalanceNotification($wallet));
+
+                // Throttle alerts to once per 24 hours
+                Cache::put($lockKey, true, now()->addDay());
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@ return new class() extends Migration
     {
         Schema::create('point_transactions', function (Blueprint $table): void {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
             $table->foreignId('tenant_location_id')->nullable()->constrained('tenant_locations')->nullOnDelete();

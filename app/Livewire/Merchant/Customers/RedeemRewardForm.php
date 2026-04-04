@@ -8,7 +8,6 @@ use App\Models\Reward;
 use Livewire\Component;
 use App\Models\Customer;
 use App\Services\TenantContext;
-use Livewire\Attributes\Validate;
 use App\Services\RedemptionService;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,47 +15,46 @@ class RedeemRewardForm extends Component
 {
     public Customer $customer;
 
-    #[Validate('required|exists:rewards,id')]
-    public ?int $selectedRewardId = null;
+    public $rewards = [];
 
-    public function mount(Customer $customer)
+    public function mount(Customer $customer, TenantContext $tenantContext)
     {
         $this->customer = $customer;
+        $this->loadRewards($tenantContext);
     }
 
-    public function redeem(RedemptionService $redemptionService)
+    public function loadRewards(TenantContext $tenantContext)
     {
-        $this->validate();
+        $tenant = $tenantContext->current();
 
-        $reward = Reward::findOrFail($this->selectedRewardId);
+        $this->rewards = Reward::where('tenant_id', $tenant->id)
+            ->where('is_active', true)
+            ->orderBy('points_required', 'asc')
+            ->get();
+    }
 
-        // Security check: ensure reward belongs to the same tenant as the customer
-        if ($reward->tenant_id !== $this->customer->tenant_id) {
-            Flux::toast('Unauthorized reward selection.', variant: 'danger');
-
-            return;
-        }
-
-        if ($this->customer->total_points < $reward->points_required) {
-            $this->addError('selectedRewardId', 'Insufficient points to redeem this reward.');
-
-            return;
-        }
+    public function redeem(Reward $reward, RedemptionService $redemptionService, TenantContext $tenantContext)
+    {
+        $tenant = $tenantContext->current();
 
         try {
-            $redemptionService->redeem($this->customer, $reward, Auth::id());
-
-            $this->dispatch('close-modal', name: 'redeem-reward-modal');
+            $redemptionService->handle($tenant, $this->customer, $reward, [
+                'triggered_by' => 'merchant_portal',
+                'user_id'      => \Illuminate\Support\Facades\Auth::id(),
+            ]);
 
             Flux::toast(
-                text: "Successfully redeemed: {$reward->name}",
+                text: "Successfully redeemed {$reward->name} for {$this->customer->name}.",
                 variant: 'success'
             );
 
-            $this->selectedRewardId = null;
-
-            // Notify the profile to refresh
             $this->dispatch('redemption-created');
+            $this->dispatch('close-modal', name: 'redeem-reward-modal');
+
+            // Refresh local state
+            $this->customer->refresh();
+            $this->loadRewards($tenantContext);
+
         }
         catch (Exception $e) {
             Flux::toast(
@@ -66,22 +64,9 @@ class RedeemRewardForm extends Component
         }
     }
 
-    public function render(TenantContext $tenantContext)
+    #[Layout('layouts.app')]
+    public function render()
     {
-        $tenant = $tenantContext->current();
-
-        // Fetch active rewards for the tenant's loyalty program
-        $rewards = Reward::where('tenant_id', $tenant->id)
-            ->where('is_active', true)
-            ->where(function ($query) {
-                $query->whereNull('expires_at')
-                    ->orWhere('expires_at', '>=', now());
-            })
-            ->orderBy('points_required', 'asc')
-            ->get();
-
-        return view('livewire.merchant.customers.redeem-reward-form', [
-            'rewards' => $rewards,
-        ]);
+        return view('livewire.merchant.customers.redeem-reward-form');
     }
 }
