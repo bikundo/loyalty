@@ -7,6 +7,7 @@ use App\Livewire\Merchant\Customers\CustomerTable;
 use App\Livewire\Merchant\Customers\CustomerProfile;
 use App\Livewire\Cashier\Dashboard as CashierDashboard;
 use App\Livewire\Merchant\Dashboard as MerchantDashboard;
+use App\Livewire\Merchant\Settings\StaffManagement;
 
 Route::get('/', function () {
     return view('welcome');
@@ -24,7 +25,7 @@ Route::middleware(['auth', 'tenant'])->prefix('admin')->group(function () {
     Route::get('/customers/{customer}', CustomerProfile::class)->name('admin.customers.show');
     Route::get('/rewards', function () { return 'Rewards Management coming soon'; })->name('admin.rewards');
     Route::get('/campaigns', CampaignIndex::class)->name('admin.campaigns');
-    Route::get('/settings', function () { return 'Tenant Settings coming soon'; })->name('admin.settings');
+    Route::get('/settings', StaffManagement::class)->name('admin.settings');
 });
 
 // 2. Cashier Scanner Routes

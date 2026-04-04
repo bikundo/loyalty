@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use Exception;
 use App\Models\Tenant;
+use App\Models\Cashier;
 use App\Models\Customer;
 use Illuminate\Support\Str;
 use App\Models\PointTransaction;
@@ -20,6 +22,25 @@ class AwardPointsService
     public function handle(Tenant $tenant, Customer $customer, array $transactionData, array $meta = []): array
     {
         return DB::transaction(function () use ($tenant, $customer, $transactionData, $meta) {
+            $amountSpent = (float) ($transactionData['amount_spent_kes'] ?? 0);
+            $userId = $meta['user_id'] ?? Auth::id();
+
+            // Guard: Daily Award Cap for Cashiers (Fraud Prevention)
+            if ($userId) {
+                $cashier = Cashier::where('user_id', $userId)
+                    ->where('tenant_id', $tenant->id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($cashier && $cashier->daily_award_cap_kes > 0) {
+                    if ($cashier->total_awarded_today_kes + $amountSpent > $cashier->daily_award_cap_kes) {
+                        throw new Exception("Daily award limit exceeded for this cashier (Limit: KES {$cashier->daily_award_cap_kes}).");
+                    }
+                    
+                    $cashier->increment('total_awarded_today_kes', $amountSpent);
+                }
+            }
+
             // Re-fetch customer with lock for safe points increment
             $customer = Customer::lockForUpdate()->find($customer->id);
 
