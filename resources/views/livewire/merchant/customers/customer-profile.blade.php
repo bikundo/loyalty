@@ -63,13 +63,13 @@
                 @forelse ($transactions as $tx)
                     <flux:table.row>
                         <flux:table.cell>
-                            <flux:badge size="sm" :color="$tx->type === 'earn' ? 'green' : 'amber'">
+                            <flux:badge size="sm" :color="$tx->type === 'earn' ? 'green' : ($tx->type === 'redeem' ? 'amber' : 'zinc')">
                                 {{ ucfirst($tx->type) }}
                             </flux:badge>
                         </flux:table.cell>
-                        <flux:table.cell>{{ $tx->description ?? 'Transaction' }}</flux:table.cell>
-                        <flux:table.cell class="font-mono font-medium {{ $tx->type === 'earn' ? 'text-green-600' : 'text-amber-600' }}">
-                            {{ $tx->type === 'earn' ? '+' : '-' }}{{ number_format($tx->points) }}
+                        <flux:table.cell class="text-zinc-900 dark:text-zinc-100 font-medium">{{ $tx->note ?? 'Point Transaction' }}</flux:table.cell>
+                        <flux:table.cell class="font-mono font-medium {{ $tx->points > 0 ? 'text-green-600' : 'text-amber-600' }}">
+                            {{ $tx->points > 0 ? '+' : '' }}{{ number_format($tx->points) }}
                         </flux:table.cell>
                         <flux:table.cell class="text-sm text-zinc-500">{{ $tx->created_at->format('M j, Y h:i A') }}</flux:table.cell>
                     </flux:table.row>

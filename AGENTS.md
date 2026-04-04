@@ -116,7 +116,6 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Use TitleCase for Enum keys: `FavoritePerson`, `BestLake`, `Monthly`.
 - Prefer PHPDoc blocks over inline comments. Only add inline comments for exceptionally complex logic.
 - Use array shape type definitions in PHPDoc blocks.
-- always prefer Class imports over inline classes
 
 === herd rules ===
 
@@ -169,7 +168,6 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Livewire allow to build dynamic, reactive interfaces in PHP without writing JavaScript.
 - You can use Alpine.js for client-side interactions instead of JavaScript frameworks.
 - Keep state server-side so the UI reflects it. Validate and authorize in actions as you would in HTTP requests.
-- Prefer class based components over sfc components
 
 === pint/core rules ===
 

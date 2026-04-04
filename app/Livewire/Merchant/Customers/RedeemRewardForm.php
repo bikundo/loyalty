@@ -23,11 +23,17 @@ class RedeemRewardForm extends Component
         $this->customer = $customer;
     }
 
-    public function redeem(RedemptionService $redemptionService, TenantContext $tenantContext)
+    public function redeem(RedemptionService $redemptionService)
     {
         $this->validate();
 
         $reward = Reward::findOrFail($this->selectedRewardId);
+
+        // Security check: ensure reward belongs to the same tenant as the customer
+        if ($reward->tenant_id !== $this->customer->tenant_id) {
+            Flux::toast("Unauthorized reward selection.", variant: 'danger');
+            return;
+        }
 
         if ($this->customer->total_points < $reward->points_required) {
             $this->addError('selectedRewardId', "Insufficient points to redeem this reward.");
@@ -37,16 +43,22 @@ class RedeemRewardForm extends Component
         try {
             $redemptionService->redeem($this->customer, $reward, Auth::id());
             
-            Flux::toast("Successfully redeemed: {$reward->name}.");
+            $this->dispatch('close-modal', name: 'redeem-reward-modal');
             
-            $this->reset('selectedRewardId');
+            Flux::toast(
+                text: "Successfully redeemed: {$reward->name}",
+                variant: 'success'
+            );
             
-            $this->modal('redeem-reward-modal')->close();
+            $this->selectedRewardId = null;
             
-            // Notify the parent (CustomerProfile) to refresh
+            // Notify the profile to refresh
             $this->dispatch('redemption-created');
         } catch (\Exception $e) {
-            Flux::toast($e->getMessage(), variant: 'danger');
+            Flux::toast(
+                text: "Redemption failed: " . $e->getMessage(),
+                variant: 'danger'
+            );
         }
     }
 

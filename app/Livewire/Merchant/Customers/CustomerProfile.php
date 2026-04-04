@@ -35,7 +35,6 @@ class CustomerProfile extends Component
     public function render()
     {
         $transactions = $this->customer->pointTransactions()
-            ->with('staff') // Assuming staff relation exists if it's cashier, let's just use basic
             ->latest()
             ->paginate(10);
 

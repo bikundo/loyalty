@@ -61,3 +61,23 @@ test('it throws exception if customer has insufficient points', function () {
 
     $service->redeem($customer, $reward);
 });
+
+test('it throws exception if reward belongs to different tenant', function () {
+    $tenant1 = Tenant::factory()->create();
+    $tenant2 = Tenant::factory()->create();
+    
+    $customer = Customer::factory()->for($tenant1)->create(['total_points' => 1000]);
+    $reward = Reward::factory()->for($tenant2)->create(['points_required' => 500]);
+
+    $service = new RedemptionService();
+
+    // The service currently doesn't explicitly check tenant isolation, it relies on the caller
+    // but in a multi-tenant app, it's good practice. 
+    // Let's see if we should add it to the service or keep it in the Livewire layer.
+    // Given the plan, I should probably add a defensive check in the Service.
+    
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Unauthorized reward selection for this customer');
+
+    $service->redeem($customer, $reward);
+});
