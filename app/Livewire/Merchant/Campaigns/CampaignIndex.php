@@ -2,13 +2,20 @@
 
 namespace App\Livewire\Merchant\Campaigns;
 
-use Livewire\Component;
 use App\Models\Tenant;
+use Livewire\Component;
 use App\Services\TenantContext;
 use Livewire\Attributes\Layout;
 
 class CampaignIndex extends Component
 {
+    public string $tab = 'manual';
+
+    public function setTab(string $tab)
+    {
+        $this->tab = $tab;
+    }
+
     #[Layout('layouts.admin')]
     public function render(TenantContext $tenantContext)
     {

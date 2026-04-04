@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Customer;
 use App\Services\TenantContext;
 use Illuminate\Validation\Rule;
+use App\Services\ReferralService;
 
 class EnrolmentForm extends Component
 {
@@ -14,6 +15,8 @@ class EnrolmentForm extends Component
     public string $phone = '';
 
     public ?string $date_of_birth = null;
+
+    public string $referral_code = '';
 
     public function save(TenantContext $tenantContext)
     {
@@ -28,9 +31,10 @@ class EnrolmentForm extends Component
                 Rule::unique('customers', 'phone')->where('tenant_id', $tenant->id),
             ],
             'date_of_birth' => 'nullable|date',
+            'referral_code' => 'nullable|string|max:20',
         ]);
 
-        Customer::create([
+        $customer = Customer::create([
             'tenant_id'         => $tenant->id,
             'name'              => $this->name,
             'phone'             => $this->phone,
@@ -41,7 +45,11 @@ class EnrolmentForm extends Component
             'total_points'      => 0, // start with 0
         ]);
 
-        $this->reset(['name', 'phone', 'date_of_birth']);
+        if ($this->referral_code) {
+            app(ReferralService::class)->link($customer, $this->referral_code);
+        }
+
+        $this->reset(['name', 'phone', 'date_of_birth', 'referral_code']);
 
         // Flux modal closing
         $this->dispatch('close-modal', 'enrol-customer');

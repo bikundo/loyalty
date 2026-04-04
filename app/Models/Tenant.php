@@ -100,4 +100,9 @@ class Tenant extends Model
     {
         return $this->hasMany(Campaign::class);
     }
+
+    public function automations(): HasMany
+    {
+        return $this->hasMany(CampaignAutomation::class);
+    }
 }

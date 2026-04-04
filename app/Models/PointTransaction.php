@@ -30,20 +30,29 @@ class PointTransaction extends Model
         'triggered_by',
         'type',
         'points',
+        'points_remaining',
         'balance_after',
         'amount_spent_kes',
         'external_reference',
         'idempotency_key',
         'note',
+        'expires_at',
         'void_reason',
         'voided_transaction_id',
         'created_at',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'points'           => 'integer',
+        'points_remaining' => 'integer',
         'balance_after'    => 'integer',
         'amount_spent_kes' => 'integer',
+        'expires_at'       => 'datetime',
         'created_at'       => 'datetime',
     ];
 

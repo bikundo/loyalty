@@ -32,6 +32,25 @@ class RedemptionService
                 throw new Exception("Insufficient points. Customer has {$customer->total_points} total points, but {$reward->name} requires {$reward->points_required}.");
             }
 
+            // 0. FIFO Points Depletion (for Expiry tracking)
+            $pointsToDeplete = $reward->points_required;
+            $earnTransactions = PointTransaction::where('customer_id', $customer->id)
+                ->where('type', 'earn')
+                ->where('points_remaining', '>', 0)
+                ->orderBy('created_at', 'asc')
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($earnTransactions as $earnTx) {
+                if ($pointsToDeplete <= 0) {
+                    break;
+                }
+
+                $usage = min($earnTx->points_remaining, $pointsToDeplete);
+                $earnTx->decrement('points_remaining', $usage);
+                $pointsToDeplete -= $usage;
+            }
+
             // 1. Create Point Transaction (Redeem type)
             // Note: HasUuid trait handles the 'uuid' field via the 'creating' event.
             $transaction = PointTransaction::create([
@@ -40,6 +59,7 @@ class RedemptionService
                 'tenant_location_id'   => $meta['location_id'] ?? null,
                 'type'                 => 'redeem',
                 'points'               => $reward->points_required,
+                'points_remaining'     => -$reward->points_required, // Audit: negative for redemptions
                 'balance_after'        => $customer->total_points - $reward->points_required,
                 'note'                 => $meta['note'] ?? "Redeemed for: {$reward->name}",
                 'triggered_by'         => $meta['triggered_by'] ?? 'merchant_portal',

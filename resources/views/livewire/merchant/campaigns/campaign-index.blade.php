@@ -25,8 +25,18 @@
         </flux:card>
     </div>
 
-    <!-- Campaigns Table -->
-    <livewire:merchant.campaigns.campaign-table />
+    <flux:tabs variant="pills">
+        <flux:tab :wire:click="'setTab(\'manual\')'" :current="$tab === 'manual'">Manual Campaigns</flux:tab>
+        <flux:tab :wire:click="'setTab(\'automation\')'" :current="$tab === 'automation'">Lifecycle Automations</flux:tab>
+    </flux:tabs>
+
+    @if($tab === 'manual')
+        <!-- Campaigns Table -->
+        <livewire:merchant.campaigns.campaign-table />
+    @else
+        <!-- Lifecycle Automations -->
+        <livewire:merchant.campaigns.automation-index />
+    @endif
 
     <!-- Create Campaign Modal -->
     <livewire:merchant.campaigns.create-campaign-form />

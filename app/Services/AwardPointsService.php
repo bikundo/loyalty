@@ -36,7 +36,7 @@ class AwardPointsService
                     if ($cashier->total_awarded_today_kes + $amountSpent > $cashier->daily_award_cap_kes) {
                         throw new Exception("Daily award limit exceeded for this cashier (Limit: KES {$cashier->daily_award_cap_kes}).");
                     }
-                    
+
                     $cashier->increment('total_awarded_today_kes', $amountSpent);
                 }
             }
@@ -53,6 +53,10 @@ class AwardPointsService
             $createdTransactions = [];
             $totalPointsEarned = 0;
 
+            $loyaltyProgram = $tenant->loyaltyProgram;
+            $expiryDays = $loyaltyProgram->expiry_days;
+            $expiresAt = $expiryDays > 0 ? now()->addDays($expiryDays) : null;
+
             foreach ($awards as $award) {
                 $points = $award['points'];
                 $rule = $award['rule'];
@@ -68,12 +72,14 @@ class AwardPointsService
                     'tenant_location_id'   => $meta['location_id'] ?? null,
                     'type'                 => 'earn',
                     'points'               => $points,
+                    'points_remaining'     => $points,
                     'balance_after'        => $afterBalance,
                     'amount_spent_kes'     => $transactionData['amount_spent_kes'] ?? null,
                     'note'                 => $meta['note'] ?? "Points earned via {$rule->name}",
                     'triggered_by'         => $meta['triggered_by'] ?? 'system',
                     'triggered_by_user_id' => $meta['user_id'] ?? Auth::id(),
                     'idempotency_key'      => Str::uuid()->toString(),
+                    'expires_at'           => $expiresAt,
                     'created_at'           => now(),
                 ]);
             }
@@ -94,7 +100,59 @@ class AwardPointsService
                 ['triggered_by' => 'awarding_service']
             );
 
+            // Hook for Milestone Automations
+            app(AutomationService::class)->evaluateMilestones($customer);
+
+            // Hook for Referral Qualification (First Visit)
+            if ($customer->total_visits === 1) {
+                app(ReferralService::class)->qualify($customer);
+            }
+
             return $createdTransactions;
+        });
+    }
+
+    /**
+     * Award points manually or via automation without rule evaluation.
+     */
+    public function awardBonus(Tenant $tenant, Customer $customer, int $points, string $note, array $meta = []): PointTransaction
+    {
+        return DB::transaction(function () use ($tenant, $customer, $points, $note, $meta) {
+            $customer = Customer::lockForUpdate()->find($customer->id);
+
+            $loyaltyProgram = $tenant->loyaltyProgram;
+            $expiryDays = $loyaltyProgram->expiry_days;
+            $expiresAt = $expiryDays > 0 ? now()->addDays($expiryDays) : null;
+
+            $transaction = PointTransaction::create([
+                'tenant_id'            => $tenant->id,
+                'customer_id'          => $customer->id,
+                'tenant_location_id'   => $meta['location_id'] ?? null,
+                'type'                 => 'earn',
+                'points'               => $points,
+                'points_remaining'     => $points,
+                'balance_after'        => $customer->total_points + $points,
+                'note'                 => $note,
+                'triggered_by'         => $meta['triggered_by'] ?? 'system',
+                'triggered_by_user_id' => $meta['user_id'] ?? null,
+                'idempotency_key'      => Str::uuid()->toString(),
+                'expires_at'           => $expiresAt,
+                'created_at'           => now(),
+            ]);
+
+            $customer->total_points += $points;
+            $customer->lifetime_points_earned += $points;
+            $customer->save();
+
+            // Hook for Milestone Automations
+            app(AutomationService::class)->evaluateMilestones($customer);
+
+            // Hook for Referral Qualification (First Visit)
+            if ($customer->total_visits === 1) {
+                app(ReferralService::class)->qualify($customer);
+            }
+
+            return $transaction;
         });
     }
 }

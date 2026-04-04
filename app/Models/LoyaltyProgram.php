@@ -27,13 +27,15 @@ class LoyaltyProgram extends Model
         'expiry_days',
         'expiry_warning_days',
         'is_active',
+        'referral_reward_points',
     ];
 
     protected $casts = [
-        'points_to_kes_ratio' => 'integer',
-        'expiry_days'         => 'integer',
-        'expiry_warning_days' => 'integer',
-        'is_active'           => 'boolean',
+        'points_to_kes_ratio'    => 'integer',
+        'expiry_days'            => 'integer',
+        'expiry_warning_days'    => 'integer',
+        'is_active'              => 'boolean',
+        'referral_reward_points' => 'integer',
     ];
 
     public function rules(): HasMany

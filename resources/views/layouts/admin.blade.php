@@ -19,9 +19,14 @@
             <flux:navlist variant="outline">
                 <flux:navlist.item icon="home" href="/admin/dashboard" :current="request()->is('admin/dashboard')">Dashboard</flux:navlist.item>
                 <flux:navlist.item icon="users" href="/admin/customers" :current="request()->is('admin/customers*')">Customers</flux:navlist.item>
+                <flux:navlist.item icon="chart-bar" href="/admin/analytics" :current="request()->is('admin/analytics*')">Analytics</flux:navlist.item>
                 <flux:navlist.item icon="gift" href="/admin/rewards" :current="request()->is('admin/rewards*')">Rewards</flux:navlist.item>
                 <flux:navlist.item icon="chat-bubble-bottom-center-text" href="/admin/campaigns" :current="request()->is('admin/campaigns*')">Marketing</flux:navlist.item>
-                <flux:navlist.item icon="cog-6-tooth" href="/admin/settings" :current="request()->is('admin/settings*')">Settings</flux:navlist.item>
+                
+                <flux:navlist.group label="Configuration" class="mt-4">
+                    <flux:navlist.item icon="users-2" href="/admin/settings" :current="request()->is('admin/settings')">Staff Management</flux:navlist.item>
+                    <flux:navlist.item icon="cog-6-tooth" href="/admin/settings/loyalty" :current="request()->is('admin/settings/loyalty')">Program Rules</flux:navlist.item>
+                </flux:navlist.group>
             </flux:navlist>
 
             <flux:spacer />

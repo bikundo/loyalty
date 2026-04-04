@@ -16,11 +16,15 @@ class CustomerProfile extends Component
 
     public function mount(Customer $customer)
     {
-        // Add basic tenant cross-check just to be safe, assuming TenantContext is correctly scoping
-        // But the middleware handles basic tenant scoping. We'll rely on global scopes if they exist
-        // or explicitly check it if needed. For now the model belongs to a tenant explicitly.
         $this->customer = $customer;
-        $this->customer->loadCount('pointTransactions', 'redemptions');
+        $this->customer->loadCount(['pointTransactions', 'redemptions', 'referrals']);
+    }
+
+    public string $tab = 'transactions';
+
+    public function setTab(string $tab)
+    {
+        $this->tab = $tab;
     }
 
     #[On('points-awarded')]
@@ -28,7 +32,7 @@ class CustomerProfile extends Component
     public function refreshCustomer()
     {
         $this->customer->refresh();
-        $this->customer->loadCount('pointTransactions', 'redemptions');
+        $this->customer->loadCount(['pointTransactions', 'redemptions', 'referrals']);
     }
 
     #[Layout('layouts.admin')]
@@ -36,10 +40,16 @@ class CustomerProfile extends Component
     {
         $transactions = $this->customer->pointTransactions()
             ->latest()
-            ->paginate(10);
+            ->paginate(10, pageName: 'transactions-page');
+
+        $referrals = $this->customer->referrals()
+            ->with('referred')
+            ->latest()
+            ->paginate(10, pageName: 'referrals-page');
 
         return view('livewire.merchant.customers.customer-profile', [
             'transactions' => $transactions,
+            'referrals'    => $referrals,
         ]);
     }
 }

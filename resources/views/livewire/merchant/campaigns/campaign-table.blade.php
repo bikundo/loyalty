@@ -62,9 +62,54 @@
                         <flux:table.cell class="text-zinc-500 tabular-nums">
                             {{ $campaign->created_at->format('M d, H:i') }}
                         </flux:table.cell>
+                        <flux:table.cell align="right">
+                            @if($campaign->status === 'completed')
+                                <flux:button variant="ghost" icon="chart-bar" wire:click="showInsights({{ $campaign->id }})" size="sm">Insights</flux:button>
+                            @endif
+                        </flux:table.cell>
                     </flux:table.row>
                 @endforeach
             </flux:table.rows>
         </flux:table>
     </flux:card>
+
+    <!-- Insights Modal -->
+    <flux:modal name="campaign-insights" class="min-w-[400px]">
+        <div class="space-y-6">
+            @if($selectedCampaign && $insights)
+                <div>
+                    <flux:heading size="lg">Campaign Insights: {{ $selectedCampaign->name }}</flux:heading>
+                    <flux:subheading>Performance metrics for the first 7 days post-campaign.</flux:subheading>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <flux:card class="space-y-1 bg-zinc-50">
+                        <flux:text size="xs" class="uppercase font-semibold text-zinc-500">Recipients</flux:text>
+                        <flux:heading size="lg">{{ number_format($insights['total_recipients']) }}</flux:heading>
+                    </flux:card>
+                    
+                    <flux:card class="space-y-1 bg-zinc-50">
+                        <flux:text size="xs" class="uppercase font-semibold text-zinc-500">Converted Visitors</flux:text>
+                        <flux:heading size="lg">{{ number_format($insights['converted_visitors']) }}</flux:heading>
+                    </flux:card>
+                </div>
+
+                <flux:card class="flex flex-col items-center justify-center p-6 space-y-2 bg-primary-50 border-primary-100">
+                    <flux:text size="sm" class="font-medium text-primary-700">Conversion Rate</flux:text>
+                    <div class="text-4xl font-bold text-primary-900">{{ $insights['conversion_rate'] }}%</div>
+                    <flux:text size="xs" class="text-primary-600 text-center">Percentage of recipients who visited or earned points within 7 days of receiving this campaign.</flux:text>
+                </flux:card>
+
+                <div class="flex justify-end pt-4">
+                    <flux:modal.close>
+                        <flux:button variant="ghost">Close</flux:button>
+                    </flux:modal.close>
+                </div>
+            @else
+                <div class="flex items-center justify-center h-48">
+                    <flux:text color="gray">Loading insights...</flux:text>
+                </div>
+            @endif
+        </div>
+    </flux:modal>
 </div>

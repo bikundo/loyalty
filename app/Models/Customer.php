@@ -33,6 +33,7 @@ class Customer extends Model
         'enrolment_channel',
         'preferred_language',
         'fcm_token',
+        'referral_code',
         'total_points',
         'lifetime_points_earned',
         'lifetime_spend_kes',
@@ -41,6 +42,28 @@ class Customer extends Model
         'enrolled_at',
         'referred_by_customer_id',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function ($customer) {
+            if (!$customer->referral_code) {
+                $customer->referral_code = static::generateUniqueReferralCode($customer->name ?? 'USER');
+            }
+        });
+    }
+
+    public static function generateUniqueReferralCode(?string $name = null): string
+    {
+        $prefix = $name ? strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $name), 0, 4)) : 'USER';
+        $prefix = $prefix ?: 'USER';
+
+        do {
+            $code = $prefix . '-' . rand(1000, 9999);
+        }
+        while (static::where('referral_code', $code)->exists());
+
+        return $code;
+    }
 
     public function scopeSearch($query, $search)
     {
