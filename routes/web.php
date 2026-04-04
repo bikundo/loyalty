@@ -2,11 +2,11 @@
 
 use App\Http\Responses\LoginResponse;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Merchant\Campaigns\CampaignIndex;
 use App\Livewire\Merchant\Customers\CustomerTable;
 use App\Livewire\Merchant\Customers\CustomerProfile;
 use App\Livewire\Cashier\Dashboard as CashierDashboard;
 use App\Livewire\Merchant\Dashboard as MerchantDashboard;
-use App\Livewire\Merchant\Campaigns\CampaignIndex;
 
 Route::get('/', function () {
     return view('welcome');

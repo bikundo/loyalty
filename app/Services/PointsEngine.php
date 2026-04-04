@@ -2,18 +2,16 @@
 
 namespace App\Services;
 
+use App\Models\Tenant;
 use App\Models\Customer;
 use App\Models\LoyaltyRule;
-use App\Models\Tenant;
 
 class PointsEngine
 {
     /**
      * Evaluate rules for a given transaction to determine points to award.
      *
-     * @param Tenant $tenant
-     * @param Customer $customer
-     * @param array $transactionData e.g., ['amount_spent_kes' => 1500]
+     * @param  array  $transactionData  e.g., ['amount_spent_kes' => 1500]
      * @return array<int, array{rule: LoyaltyRule, points: int}>
      */
     public function evaluate(Tenant $tenant, Customer $customer, array $transactionData): array
@@ -33,7 +31,7 @@ class PointsEngine
 
         $awards = [];
 
-        /** @var \App\Models\LoyaltyRule $rule */
+        /** @var LoyaltyRule $rule */
         foreach ($rules as $rule) {
             // Cannot stack if we've already generated an award
             if (!$rule->stack_with_others && count($awards) > 0) {
@@ -44,7 +42,7 @@ class PointsEngine
 
             if ($points > 0) {
                 $awards[] = [
-                    'rule' => $rule,
+                    'rule'   => $rule,
                     'points' => $points,
                 ];
 
@@ -75,6 +73,7 @@ class PointsEngine
                 }
 
                 $pointsPerKes = $config['points_per_kes'] ?? 0;
+
                 return (int) round($amountSpent * $pointsPerKes);
 
             default:

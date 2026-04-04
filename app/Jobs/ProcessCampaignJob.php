@@ -2,19 +2,23 @@
 
 namespace App\Jobs;
 
+use Exception;
 use App\Models\Campaign;
-use App\Models\CampaignRecipient;
-use App\Services\Sms\SmsService;
 use Illuminate\Bus\Queueable;
+use App\Services\Sms\SmsService;
+use App\Models\CampaignRecipient;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
 class ProcessCampaignJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /**
      * Create a new job instance.
@@ -39,7 +43,7 @@ class ProcessCampaignJob implements ShouldQueue
                 foreach ($recipients as $recipient) {
                     try {
                         $log = $smsService->sendToCustomer(
-                            $recipient->customer, 
+                            $recipient->customer,
                             $this->campaign->message,
                             ['triggered_by' => 'campaign', 'campaign_id' => $this->campaign->id]
                         );
@@ -47,12 +51,14 @@ class ProcessCampaignJob implements ShouldQueue
                         if ($log && $log->status === 'sent') {
                             $recipient->update(['status' => 'sent', 'sent_at' => now()]);
                             $this->campaign->increment('recipients_sent');
-                        } else {
+                        }
+                        else {
                             $errorMessage = $log->error_message ?? 'Failed to dispatch SMS';
                             $recipient->update(['status' => 'failed', 'error_message' => $errorMessage]);
                             $this->campaign->increment('recipients_failed');
                         }
-                    } catch (\Exception $e) {
+                    }
+                    catch (Exception $e) {
                         Log::error("Campaign Dispatch Error (Recipient: {$recipient->id}): " . $e->getMessage());
                         $recipient->update(['status' => 'failed', 'error_message' => $e->getMessage()]);
                         $this->campaign->increment('recipients_failed');
@@ -62,8 +68,8 @@ class ProcessCampaignJob implements ShouldQueue
 
         // 3. Mark campaign as completed
         $this->campaign->update([
-            'status' => 'completed',
-            'completed_at' => now()
+            'status'       => 'completed',
+            'completed_at' => now(),
         ]);
     }
 }

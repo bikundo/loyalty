@@ -4,13 +4,12 @@ namespace App\Services\Sms;
 
 use App\Models\Tenant;
 use App\Models\Campaign;
-use App\Models\CampaignRecipient;
 use App\Models\Customer;
 use App\Models\SmsWallet;
-use App\Services\Sms\SmsService;
+use Illuminate\Support\Str;
+use App\Models\CampaignRecipient;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 
 class CampaignService
 {
@@ -21,9 +20,7 @@ class CampaignService
     /**
      * Create a campaign and prepare recipients.
      *
-     * @param Tenant $tenant
-     * @param array $data {name: string, message: string, segment_type: string}
-     * @return Campaign
+     * @param  array  $data  {name: string, message: string, segment_type: string}
      */
     public function create(Tenant $tenant, array $data): Campaign
     {
@@ -43,24 +40,24 @@ class CampaignService
 
             // 3. Create Campaign
             $campaign = Campaign::create([
-                'tenant_id' => $tenant->id,
+                'tenant_id'          => $tenant->id,
                 'created_by_user_id' => Auth::id(),
-                'name' => $data['name'],
-                'message' => $data['message'],
-                'segment_type' => $data['segment_type'] ?? 'all',
-                'status' => $status,
-                'recipients_total' => $totalRecipients,
-                'credits_reserved' => $creditsRequired,
-                'uuid' => Str::uuid()->toString(),
+                'name'               => $data['name'],
+                'message'            => $data['message'],
+                'segment_type'       => $data['segment_type'] ?? 'all',
+                'status'             => $status,
+                'recipients_total'   => $totalRecipients,
+                'credits_reserved'   => $creditsRequired,
+                'uuid'               => Str::uuid()->toString(),
             ]);
 
             // 4. Batch insert recipients
             $recipientRecords = $recipientIds->map(fn($id) => [
                 'campaign_id' => $campaign->id,
                 'customer_id' => $id,
-                'status' => 'pending',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'status'      => 'pending',
+                'created_at'  => now(),
+                'updated_at'  => now(),
             ])->toArray();
 
             foreach (array_chunk($recipientRecords, 500) as $chunk) {
@@ -80,8 +77,8 @@ class CampaignService
 
         return match ($segmentType) {
             'active_30' => $query->where('last_visit_at', '>=', now()->subDays(30)),
-            'churning' => $query->where('last_visit_at', '<=', now()->subDays(60)),
-            default => $query,
+            'churning'  => $query->where('last_visit_at', '<=', now()->subDays(60)),
+            default     => $query,
         };
     }
 }

@@ -2,16 +2,15 @@
 
 namespace App\Services;
 
-use App\Models\Customer;
 use App\Models\Reward;
+use App\Models\Customer;
 use App\Models\Redemption;
-use App\Models\PointTransaction;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
-
+use App\Models\PointTransaction;
 use App\Services\Sms\SmsService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class RedemptionService
 {
@@ -42,31 +41,31 @@ class RedemptionService
 
             // 2. Create Point Transaction Ledger Entry (Debit)
             PointTransaction::create([
-                'tenant_id' => $customer->tenant_id,
-                'customer_id' => $customer->id,
-                'tenant_location_id' => $meta['tenant_location_id'] ?? null,
-                'type' => 'redemption',
-                'points' => -$pointsRequired,
-                'balance_after' => $newBalance,
+                'tenant_id'            => $customer->tenant_id,
+                'customer_id'          => $customer->id,
+                'tenant_location_id'   => $meta['tenant_location_id'] ?? null,
+                'type'                 => 'redemption',
+                'points'               => -$pointsRequired,
+                'balance_after'        => $newBalance,
                 'triggered_by_user_id' => $userId ?? Auth::id(),
-                'triggered_by' => $cashierId ? 'cashier' : 'merchant',
-                'idempotency_key' => Str::uuid()->toString(),
-                'note' => $meta['note'] ?? "Redemption: {$reward->name}",
-                'created_at' => now(),
+                'triggered_by'         => $cashierId ? 'cashier' : 'merchant',
+                'idempotency_key'      => Str::uuid()->toString(),
+                'note'                 => $meta['note'] ?? "Redemption: {$reward->name}",
+                'created_at'           => now(),
             ]);
 
             // 3. Create Redemption Record
             $redemption = Redemption::create([
-                'tenant_id' => $customer->tenant_id,
-                'customer_id' => $customer->id,
-                'reward_id' => $reward->id,
-                'tenant_location_id' => $meta['tenant_location_id'] ?? null,
-                'status' => 'confirmed',
-                'points_used' => $pointsRequired,
+                'tenant_id'               => $customer->tenant_id,
+                'customer_id'             => $customer->id,
+                'reward_id'               => $reward->id,
+                'tenant_location_id'      => $meta['tenant_location_id'] ?? null,
+                'status'                  => 'confirmed',
+                'points_used'             => $pointsRequired,
                 'initiated_by_cashier_id' => $cashierId,
                 'confirmed_by_cashier_id' => $cashierId,
-                'confirmed_by_user_id' => $userId ?? Auth::id(),
-                'confirmed_at' => now(),
+                'confirmed_by_user_id'    => $userId ?? Auth::id(),
+                'confirmed_at'            => now(),
             ]);
 
             // 4. Update Customer Ledger Stats

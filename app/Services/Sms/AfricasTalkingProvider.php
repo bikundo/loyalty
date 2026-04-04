@@ -2,9 +2,10 @@
 
 namespace App\Services\Sms;
 
+use Exception;
 use App\Models\Tenant;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class AfricasTalkingProvider implements SmsProviderInterface
 {
@@ -16,9 +17,6 @@ class AfricasTalkingProvider implements SmsProviderInterface
     /**
      * Send a single SMS message via Africa's Talking.
      *
-     * @param string $to
-     * @param string $message
-     * @param Tenant $tenant
      * @return array{success: bool, messageId: string|null, error: string|null}
      */
     public function send(string $to, string $message, Tenant $tenant): array
@@ -29,9 +27,9 @@ class AfricasTalkingProvider implements SmsProviderInterface
 
         if (empty($apiKey) || empty($username)) {
             return [
-                'success' => false,
+                'success'   => false,
                 'messageId' => null,
-                'error' => 'Africa\'s Talking API configuration missing.',
+                'error'     => 'Africa\'s Talking API configuration missing.',
             ];
         }
 
@@ -40,42 +38,44 @@ class AfricasTalkingProvider implements SmsProviderInterface
                 ->withHeaders(['Accept' => 'application/json', 'apikey' => $apiKey])
                 ->post($this->endpoint, [
                     'username' => $username,
-                    'to' => $to,
-                    'message' => $message,
-                    'from' => $from,
+                    'to'       => $to,
+                    'message'  => $message,
+                    'from'     => $from,
                 ]);
 
             if ($response->successful()) {
                 $data = $response->json();
                 $recipients = $data['SMSMessageData']['Recipients'] ?? [];
-                
+
                 if (count($recipients) > 0 && ($recipients[0]['status'] === 'Success' || $recipients[0]['status'] === 'Sent')) {
                     return [
-                        'success' => true,
+                        'success'   => true,
                         'messageId' => $recipients[0]['messageId'] ?? null,
-                        'error' => null,
+                        'error'     => null,
                     ];
                 }
 
                 return [
-                    'success' => false,
+                    'success'   => false,
                     'messageId' => null,
-                    'error' => $recipients[0]['status'] ?? 'Unknown error from provider',
+                    'error'     => $recipients[0]['status'] ?? 'Unknown error from provider',
                 ];
             }
 
             return [
-                'success' => false,
+                'success'   => false,
                 'messageId' => null,
-                'error' => $response->reason() ?: 'Failed to connect to Africa\'s Talking.',
+                'error'     => $response->reason() ?: 'Failed to connect to Africa\'s Talking.',
             ];
 
-        } catch (\Exception $e) {
-            Log::error("SMS Dispatch Error (AT): " . $e->getMessage());
+        }
+        catch (Exception $e) {
+            Log::error('SMS Dispatch Error (AT): ' . $e->getMessage());
+
             return [
-                'success' => false,
+                'success'   => false,
                 'messageId' => null,
-                'error' => $e->getMessage(),
+                'error'     => $e->getMessage(),
             ];
         }
     }

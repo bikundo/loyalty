@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Merchant\Campaigns;
 
-use Livewire\Component;
 use App\Models\Tenant;
+use Livewire\Component;
 use App\Services\TenantContext;
 
 class CampaignIndex extends Component

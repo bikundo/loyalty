@@ -2,14 +2,14 @@
 
 namespace App\Livewire\Merchant\Campaigns;
 
-use App\Models\Tenant;
-use App\Services\Sms\CampaignService;
-use App\Services\TenantContext;
-use Livewire\Component;
-use Livewire\Attributes\Validate;
+use Exception;
 use Flux\Flux;
-
+use App\Models\Tenant;
+use Livewire\Component;
+use App\Services\TenantContext;
 use App\Jobs\ProcessCampaignJob;
+use Livewire\Attributes\Validate;
+use App\Services\Sms\CampaignService;
 
 class CreateCampaignForm extends Component
 {
@@ -31,22 +31,23 @@ class CreateCampaignForm extends Component
 
         try {
             $campaign = $campaignService->create($tenant, [
-                'name' => $this->name,
-                'message' => $this->message,
+                'name'         => $this->name,
+                'message'      => $this->message,
                 'segment_type' => $this->segment_type,
             ]);
 
             if ($campaign->status === 'insufficient_funds') {
                 Flux::toast(
-                    text: "Campaign created but paused due to insufficient SMS credits. Please top up.", 
+                    text: 'Campaign created but paused due to insufficient SMS credits. Please top up.',
                     variant: 'warning'
                 );
-            } else {
+            }
+            else {
                 Flux::toast(
                     text: "Campaign '{$campaign->name}' created successfully with {$campaign->recipients_total} recipients.",
                     variant: 'success'
                 );
-                
+
                 ProcessCampaignJob::dispatch($campaign);
             }
 
@@ -54,9 +55,10 @@ class CreateCampaignForm extends Component
             $this->dispatch('close-modal', name: 'create-campaign-modal');
             $this->dispatch('campaign-created'); // Refresh table
 
-        } catch (\Exception $e) {
+        }
+        catch (Exception $e) {
             Flux::toast(
-                text: "Failed to create campaign: " . $e->getMessage(),
+                text: 'Failed to create campaign: ' . $e->getMessage(),
                 variant: 'danger'
             );
         }

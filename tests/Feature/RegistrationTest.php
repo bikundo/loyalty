@@ -1,15 +1,12 @@
 <?php
 
 use App\Enums\Role;
-use Tests\TestCase;
 use App\Models\Plan;
 use App\Models\User;
 use App\Models\Tenant;
 use App\Actions\Fortify\CreateNewUser;
 use Illuminate\Validation\ValidationException;
 use Database\Seeders\RolesAndPermissionsSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
 
 test('a new merchant can register and a tenant is created', function () {
     // 1. Seed foundation data

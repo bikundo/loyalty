@@ -2,14 +2,15 @@
 
 namespace App\Livewire\Merchant\Customers;
 
-use App\Models\Customer;
-use App\Models\Reward;
-use App\Services\RedemptionService;
-use App\Services\TenantContext;
-use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
-use Livewire\Attributes\Validate;
+use Exception;
 use Flux\Flux;
+use App\Models\Reward;
+use Livewire\Component;
+use App\Models\Customer;
+use App\Services\TenantContext;
+use Livewire\Attributes\Validate;
+use App\Services\RedemptionService;
+use Illuminate\Support\Facades\Auth;
 
 class RedeemRewardForm extends Component
 {
@@ -31,32 +32,35 @@ class RedeemRewardForm extends Component
 
         // Security check: ensure reward belongs to the same tenant as the customer
         if ($reward->tenant_id !== $this->customer->tenant_id) {
-            Flux::toast("Unauthorized reward selection.", variant: 'danger');
+            Flux::toast('Unauthorized reward selection.', variant: 'danger');
+
             return;
         }
 
         if ($this->customer->total_points < $reward->points_required) {
-            $this->addError('selectedRewardId', "Insufficient points to redeem this reward.");
+            $this->addError('selectedRewardId', 'Insufficient points to redeem this reward.');
+
             return;
         }
 
         try {
             $redemptionService->redeem($this->customer, $reward, Auth::id());
-            
+
             $this->dispatch('close-modal', name: 'redeem-reward-modal');
-            
+
             Flux::toast(
                 text: "Successfully redeemed: {$reward->name}",
                 variant: 'success'
             );
-            
+
             $this->selectedRewardId = null;
-            
+
             // Notify the profile to refresh
             $this->dispatch('redemption-created');
-        } catch (\Exception $e) {
+        }
+        catch (Exception $e) {
             Flux::toast(
-                text: "Redemption failed: " . $e->getMessage(),
+                text: 'Redemption failed: ' . $e->getMessage(),
                 variant: 'danger'
             );
         }
@@ -65,7 +69,7 @@ class RedeemRewardForm extends Component
     public function render(TenantContext $tenantContext)
     {
         $tenant = $tenantContext->current();
-        
+
         // Fetch active rewards for the tenant's loyalty program
         $rewards = Reward::where('tenant_id', $tenant->id)
             ->where('is_active', true)

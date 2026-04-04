@@ -2,11 +2,11 @@
 
 namespace App\Livewire\Merchant\Campaigns;
 
-use App\Models\Campaign;
 use App\Models\Tenant;
-use App\Services\TenantContext;
 use Livewire\Component;
+use App\Models\Campaign;
 use Livewire\WithPagination;
+use App\Services\TenantContext;
 
 class CampaignTable extends Component
 {

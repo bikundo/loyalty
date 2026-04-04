@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use App\Services\TenantContext;
+use App\Services\Sms\SmsService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Gate;
@@ -13,7 +14,6 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use App\Services\Sms\SmsProviderInterface;
 use App\Services\Sms\AfricasTalkingProvider;
-use App\Services\Sms\SmsService;
 
 class AppServiceProvider extends ServiceProvider
 {

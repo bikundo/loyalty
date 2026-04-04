@@ -4,9 +4,9 @@ namespace App\Livewire\Merchant\Customers;
 
 use Livewire\Component;
 use App\Models\Customer;
+use Livewire\Attributes\On;
 use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\On;
 
 class CustomerProfile extends Component
 {
