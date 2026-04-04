@@ -21,11 +21,21 @@
                     hint="One SMS is 160 characters. Long messages will use multiple credits."
                 />
 
-                <flux:radio.group wire:model="segment_type" label="Target Segment">
+                <flux:radio.group wire:model.live="segment_type" label="Target Segment">
                     <flux:radio value="all" label="All Customers" />
-                    <flux:radio value="active_30" label="Active this month (visited in last 30 days)" />
-                    <flux:radio value="churning" label="Churning (no visit in 60+ days)" />
+                    <flux:radio value="active" label="Active this month (last 30 days)" />
+                    <flux:radio value="lapsed" label="Lapsed (no visit in 60+ days)" />
+                    <flux:radio value="high_value" label="High-Value (Top 10% by lifetime points)" />
                 </flux:radio.group>
+
+                @if ($audienceCount > 0)
+                    <flux:callout variant="info" icon="information-circle">
+                        <div class="flex flex-col">
+                            <span>Targeting <strong>{{ number_format($audienceCount) }}</strong> customers.</span>
+                            <span class="text-xs">Estimated cost: <strong>{{ number_format($this->creditsRequired) }}</strong> SMS credits.</span>
+                        </div>
+                    </flux:callout>
+                @endif
             </div>
 
             <div class="flex gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">

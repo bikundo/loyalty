@@ -5,12 +5,19 @@ namespace App\Livewire\Merchant\Campaigns;
 use App\Models\Tenant;
 use Livewire\Component;
 use App\Models\Campaign;
+use Livewire\Attributes\On;
 use Livewire\WithPagination;
 use App\Services\TenantContext;
 
 class CampaignTable extends Component
 {
     use WithPagination;
+
+    #[On('campaign-created')]
+    public function refresh()
+    {
+        $this->resetPage();
+    }
 
     public function render(TenantContext $tenantContext)
     {

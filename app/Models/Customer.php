@@ -59,6 +59,39 @@ class Customer extends Model
         return $query->when($status, fn($q) => $q->where('status', $status));
     }
 
+    /**
+     * Customers who earned or redeemed points within the given number of days.
+     */
+    public function scopeActiveWithin($query, int $days = 30)
+    {
+        return $query->where('last_visit_at', '>=', now()->subDays($days));
+    }
+
+    /**
+     * Customers who have NOT visited within the given number of days.
+     */
+    public function scopeLapsed($query, int $days = 60)
+    {
+        return $query->where(function ($q) use ($days) {
+            $q->where('last_visit_at', '<', now()->subDays($days))
+                ->orWhereNull('last_visit_at');
+        });
+    }
+
+    /**
+     * Top N percent of customers by point balance.
+     */
+    public function scopeHighValue($query, int $percentile = 10)
+    {
+        $threshold = static::where('tenant_id', $query->getQuery()->wheres[0]['value'] ?? 0)
+            ->orderByDesc('lifetime_points_earned')
+            ->limit(1)
+            ->offset((int) max(0, floor(static::where('tenant_id', $query->getQuery()->wheres[0]['value'] ?? 0)->count() * ($percentile / 100)) - 1))
+            ->value('lifetime_points_earned') ?? 0;
+
+        return $query->where('lifetime_points_earned', '>=', $threshold);
+    }
+
     protected $casts = [
         'date_of_birth'          => 'date',
         'total_points'           => 'integer',

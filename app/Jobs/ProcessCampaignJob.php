@@ -2,11 +2,10 @@
 
 namespace App\Jobs;
 
-use Exception;
+use Throwable;
 use App\Models\Campaign;
+use App\Models\SmsWallet;
 use Illuminate\Bus\Queueable;
-use App\Services\Sms\SmsService;
-use App\Models\CampaignRecipient;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -20,56 +19,43 @@ class ProcessCampaignJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    /**
-     * Create a new job instance.
-     */
     public function __construct(
         public Campaign $campaign
     ) {}
 
     /**
-     * Execute the job.
+     * Chunk pending recipients and dispatch individual SMS jobs.
      */
-    public function handle(SmsService $smsService): void
+    public function handle(): void
     {
-        // 1. Mark campaign as processing
         $this->campaign->update(['status' => 'processing', 'dispatched_at' => now()]);
 
-        // 2. Loop through pending recipients in chunks
         $this->campaign->recipients()
             ->where('status', 'pending')
-            ->chunkById(100, function ($recipients) use ($smsService) {
-                /** @var CampaignRecipient[] $recipients */
+            ->with('customer')
+            ->chunkById(100, function ($recipients) {
                 foreach ($recipients as $recipient) {
-                    try {
-                        $log = $smsService->sendToCustomer(
-                            $recipient->customer,
-                            $this->campaign->message,
-                            ['triggered_by' => 'campaign', 'campaign_id' => $this->campaign->id]
-                        );
-
-                        if ($log && $log->status === 'sent') {
-                            $recipient->update(['status' => 'sent', 'sent_at' => now()]);
-                            $this->campaign->increment('recipients_sent');
-                        }
-                        else {
-                            $errorMessage = $log->error_message ?? 'Failed to dispatch SMS';
-                            $recipient->update(['status' => 'failed', 'error_message' => $errorMessage]);
-                            $this->campaign->increment('recipients_failed');
-                        }
-                    }
-                    catch (Exception $e) {
-                        Log::error("Campaign Dispatch Error (Recipient: {$recipient->id}): " . $e->getMessage());
-                        $recipient->update(['status' => 'failed', 'error_message' => $e->getMessage()]);
-                        $this->campaign->increment('recipients_failed');
-                    }
+                    SendCampaignSmsJob::dispatch($this->campaign, $recipient);
                 }
             });
 
-        // 3. Mark campaign as completed
-        $this->campaign->update([
-            'status'       => 'completed',
-            'completed_at' => now(),
-        ]);
+        Log::info("Campaign [{$this->campaign->id}]: dispatched SMS jobs for {$this->campaign->recipients_total} recipients.");
+    }
+
+    /**
+     * Release reserved credits if the job fails permanently.
+     */
+    public function failed(Throwable $exception): void
+    {
+        Log::error("Campaign [{$this->campaign->id}] failed: {$exception->getMessage()}");
+
+        $this->campaign->update(['status' => 'failed']);
+
+        // Release reserved credits back to the wallet
+        $wallet = SmsWallet::where('tenant_id', $this->campaign->tenant_id)->first();
+
+        if ($wallet && $this->campaign->credits_reserved > 0) {
+            $wallet->decrement('credits_reserved', $this->campaign->credits_reserved);
+        }
     }
 }

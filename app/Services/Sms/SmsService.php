@@ -53,7 +53,7 @@ class SmsService
                 'customer_id'      => $customer?->id,
                 'phone'            => $to,
                 'message'          => $message,
-                'credits_deducted' => $creditsRequired,
+                'credits_used'     => $creditsRequired,
                 'status'           => 'pending',
                 'provider'         => 'africastalking',
                 'triggered_by'     => $meta['triggered_by'] ?? 'system',

@@ -24,17 +24,40 @@
                         <flux:table.cell>
                             @php
                                 $color = match($campaign->status) {
-                                    'pending' => 'blue',
+                                    'queued' => 'zinc',
                                     'processing' => 'orange',
                                     'completed' => 'green',
                                     'failed' => 'red',
                                     default => 'zinc'
                                 };
                             @endphp
-                            <flux:badge :color="$color" size="sm" inset="none">{{ ucfirst($campaign->status) }}</flux:badge>
+                            <div class="flex flex-col gap-1">
+                                <flux:badge :color="$color" size="sm" inset="none">{{ ucfirst($campaign->status) }}</flux:badge>
+                                @if($campaign->status === 'processing')
+                                    <flux:text size="xs" class="animate-pulse">Dispatching...</flux:text>
+                                @endif
+                            </div>
                         </flux:table.cell>
                         <flux:table.cell>
-                            {{ number_format($campaign->recipients_sent) }} / {{ number_format($campaign->recipients_total) }}
+                            <div class="flex flex-col gap-1.5 w-full max-w-[200px]">
+                                <div class="flex justify-between text-xs font-medium">
+                                    <span>{{ number_format($campaign->recipients_sent + $campaign->recipients_failed) }} / {{ number_format($campaign->recipients_total) }}</span>
+                                    @if($campaign->recipients_total > 0)
+                                        <span>{{ round((($campaign->recipients_sent + $campaign->recipients_failed) / $campaign->recipients_total) * 100) }}%</span>
+                                    @endif
+                                </div>
+                                <div class="w-full h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                    <div 
+                                        class="h-full bg-{{ $color }}-500 transition-all duration-500" 
+                                        style="width: {{ $campaign->recipients_total > 0 ? (($campaign->recipients_sent + $campaign->recipients_failed) / $campaign->recipients_total) * 100 : 0 }}%"
+                                    ></div>
+                                </div>
+                                @if($campaign->recipients_failed > 0)
+                                    <flux:text size="xs" color="red" class="font-medium">
+                                        {{ number_format($campaign->recipients_failed) }} failed
+                                    </flux:text>
+                                @endif
+                            </div>
                         </flux:table.cell>
                         <flux:table.cell class="text-zinc-500 tabular-nums">
                             {{ $campaign->created_at->format('M d, H:i') }}

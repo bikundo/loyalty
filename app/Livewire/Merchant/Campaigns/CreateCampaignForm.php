@@ -7,9 +7,9 @@ use Flux\Flux;
 use App\Models\Tenant;
 use Livewire\Component;
 use App\Services\TenantContext;
-use App\Jobs\ProcessCampaignJob;
+use App\Services\CampaignService;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
-use App\Services\Sms\CampaignService;
 
 class CreateCampaignForm extends Component
 {
@@ -19,8 +19,36 @@ class CreateCampaignForm extends Component
     #[Validate('required|string|max:160')]
     public string $message = '';
 
-    #[Validate('required|string|in:all,active_30,churning')]
+    #[Validate('required|string|in:all,active,lapsed,high_value')]
     public string $segment_type = 'all';
+
+    public int $audienceCount = 0;
+
+    public function mount(CampaignService $campaignService, TenantContext $tenantContext)
+    {
+        $this->updateAudienceCount($campaignService, $tenantContext);
+    }
+
+    public function updatedSegmentType(CampaignService $campaignService, TenantContext $tenantContext)
+    {
+        $this->updateAudienceCount($campaignService, $tenantContext);
+    }
+
+    protected function updateAudienceCount(CampaignService $campaignService, TenantContext $tenantContext)
+    {
+        /** @var Tenant $tenant */
+        $tenant = $tenantContext->current();
+
+        $this->audienceCount = $campaignService->getAudienceCount($tenant, [
+            'type' => $this->segment_type,
+        ]);
+    }
+
+    #[Computed]
+    public function creditsRequired(): int
+    {
+        return $this->audienceCount * (int) ceil(strlen($this->message) / 160);
+    }
 
     public function save(CampaignService $campaignService, TenantContext $tenantContext)
     {
@@ -30,28 +58,32 @@ class CreateCampaignForm extends Component
         $tenant = $tenantContext->current();
 
         try {
-            $campaign = $campaignService->create($tenant, [
-                'name'         => $this->name,
-                'message'      => $this->message,
-                'segment_type' => $this->segment_type,
-            ]);
+            $result = $campaignService->createAndDispatch(
+                tenant: $tenant,
+                createdByUserId: auth()->id(),
+                name: $this->name,
+                message: $this->message,
+                segmentConfig: ['type' => $this->segment_type],
+            );
 
-            if ($campaign->status === 'insufficient_funds') {
+            if (!$result['success']) {
                 Flux::toast(
-                    text: 'Campaign created but paused due to insufficient SMS credits. Please top up.',
-                    variant: 'warning'
-                );
-            }
-            else {
-                Flux::toast(
-                    text: "Campaign '{$campaign->name}' created successfully with {$campaign->recipients_total} recipients.",
-                    variant: 'success'
+                    text: $result['error'],
+                    variant: 'danger'
                 );
 
-                ProcessCampaignJob::dispatch($campaign);
+                return;
             }
+
+            $campaign = $result['campaign'];
+
+            Flux::toast(
+                text: "Campaign '{$campaign->name}' queued successfully for {$campaign->recipients_total} recipients.",
+                variant: 'success'
+            );
 
             $this->reset(['name', 'message', 'segment_type']);
+            $this->updateAudienceCount($campaignService, $tenantContext);
             $this->dispatch('close-modal', name: 'create-campaign-modal');
             $this->dispatch('campaign-created'); // Refresh table
 
