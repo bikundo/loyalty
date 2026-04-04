@@ -8,6 +8,7 @@ use App\Services\TenantContext;
 use Livewire\Component;
 use Livewire\Attributes\Validate;
 use Flux\Flux;
+use Illuminate\Support\Facades\Auth;
 
 class AwardPointsForm extends Component
 {
@@ -30,26 +31,43 @@ class AwardPointsForm extends Component
 
         $tenant = $tenantContext->current();
         
-        $createdTransactions = $awardPointsService->handle(
-            $tenant, 
-            $this->customer, 
-            ['amount_spent_kes' => $this->amount_spent_kes],
-            ['note' => $this->note, 'triggered_by' => 'dashboard']
-        );
+        try {
+            $createdTransactions = $awardPointsService->handle(
+                $tenant, 
+                $this->customer, 
+                ['amount_spent_kes' => floatval($this->amount_spent_kes)],
+                [
+                    'note' => $this->note, 
+                    'triggered_by' => 'merchant_portal',
+                    'user_id' => Auth::id()
+                ]
+            );
 
-        if (empty($createdTransactions)) {
-            Flux::toast('No points were awarded. Check active rules and minimum spend requirements.', variant: 'warning');
-        } else {
-            $total = collect($createdTransactions)->sum('points');
-            Flux::toast("Successfully awarded $total points.");
+            if (empty($createdTransactions)) {
+                Flux::toast(
+                    text: 'No points were awarded. Check active rules and minimum spend requirements.', 
+                    variant: 'warning'
+                );
+            } else {
+                $total = collect($createdTransactions)->sum('points');
+                Flux::toast(
+                    text: "Successfully awarded $total points to {$this->customer->name}.",
+                    variant: 'success'
+                );
+                
+                // Let the profile view know to refresh its balances
+                $this->dispatch('points-awarded');
+            }
+
+            $this->reset(['amount_spent_kes', 'note']);
+            $this->dispatch('close-modal', name: 'award-points-modal');
+
+        } catch (\Exception $e) {
+            Flux::toast(
+                text: "Failed to award points: " . $e->getMessage(),
+                variant: 'danger'
+            );
         }
-
-        $this->reset(['amount_spent_kes', 'note']);
-        
-        $this->modal('award-points-modal')->close();
-        
-        // Let the profile view know to refresh its balances
-        $this->dispatch('points-awarded');
     }
 
     public function render()

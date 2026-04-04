@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use App\Services\Sms\SmsProviderInterface;
+use App\Services\Sms\AfricasTalkingProvider;
+use App\Services\Sms\SmsService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +24,10 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(TenantContext::class);
         $this->app->alias(TenantContext::class, 'tenant.context');
+
+        // SMS Services
+        $this->app->bind(SmsProviderInterface::class, AfricasTalkingProvider::class);
+        $this->app->singleton(SmsService::class);
     }
 
     /**

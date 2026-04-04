@@ -1,65 +1,117 @@
 <?php
 
-use App\Models\Tenant;
 use App\Models\Customer;
 use App\Models\LoyaltyRule;
 use App\Models\LoyaltyProgram;
-use App\Services\PointsEngine;
+use App\Models\Tenant;
+use App\Models\PointTransaction;
 use App\Services\AwardPointsService;
+use App\Services\PointsEngine;
+use App\Services\Sms\SmsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 
 uses(RefreshDatabase::class);
 
-it('creates a point transaction and updates the customer ledger', function () {
+test('it awards points based on spend amount', function () {
     $tenant = Tenant::factory()->create();
-    $program = LoyaltyProgram::factory()->create(['tenant_id' => $tenant->id]);
-    $customer = Customer::factory()->create([
-        'tenant_id'              => $tenant->id,
-        'total_points'           => 10,
-        'lifetime_points_earned' => 10,
-        'total_visits'           => 0,
-        'lifetime_spend_kes'     => 0,
+    $program = LoyaltyProgram::factory()->for($tenant)->create(['is_active' => true]);
+    $customer = Customer::factory()->for($tenant)->create([
+        'total_points' => 0,
+        'lifetime_points_earned' => 0,
+        'lifetime_spend_kes' => 0,
+        'total_visits' => 0,
     ]);
 
-    LoyaltyRule::create([
-        'tenant_id'          => $tenant->id,
+    // Create a rule: 1 point for every 10 KES spent
+    $rule = LoyaltyRule::factory()->for($tenant)->create([
         'loyalty_program_id' => $program->id,
-        'name'               => '100 Point Visit',
-        'type'               => 'visit',
-        'is_active'          => true,
-        'config'             => ['points_awarded' => 100],
-        'priority'           => 1,
+        'name' => 'Spend 10 earn 1',
+        'type' => 'spend',
+        'is_active' => true,
+        'config' => [
+            'min_spend_kes' => 10,
+            'points_per_kes' => 0.1,
+        ],
     ]);
 
-    $engine = new PointsEngine();
-    $service = new AwardPointsService($engine);
+    $smsService = Mockery::mock(SmsService::class);
+    $smsService->shouldReceive('sendToCustomer')->andReturn(null);
 
-    $created = $service->handle($tenant, $customer, []);
+    $service = new AwardPointsService(new PointsEngine(), $smsService);
+    
+    $transactions = $service->handle(
+        $tenant, 
+        $customer, 
+        ['amount_spent_kes' => 1000]
+    );
 
-    expect($created)->toHaveCount(1)
-        ->and($created[0]->points)->toBe(100)
-        ->and($created[0]->balance_after)->toBe(110);
+    expect($transactions)->toHaveCount(1);
+    expect($transactions[0]->points)->toBe(100);
+    expect($transactions[0]->type)->toBe('earn');
 
     $customer->refresh();
-
-    expect($customer->total_points)->toBe(110)
-        ->and($customer->lifetime_points_earned)->toBe(110)
-        ->and($customer->total_visits)->toBe(1);
+    expect($customer->total_points)->toBe(100);
+    expect($customer->lifetime_points_earned)->toBe(100);
+    expect($customer->lifetime_spend_kes)->toBe(1000);
+    expect($customer->total_visits)->toBe(1);
 });
 
-it('returns empty array when no rules match', function () {
+test('it awards points based on visit', function () {
     $tenant = Tenant::factory()->create();
-    $customer = Customer::factory()->create([
-        'tenant_id'    => $tenant->id,
-        'total_points' => 0,
+    $program = LoyaltyProgram::factory()->for($tenant)->create(['is_active' => true]);
+    $customer = Customer::factory()->for($tenant)->create(['total_points' => 0]);
+
+    // Create a rule: 5 points per visit
+    $rule = LoyaltyRule::factory()->for($tenant)->create([
+        'loyalty_program_id' => $program->id,
+        'name' => 'Visit Bonus',
+        'type' => 'visit',
+        'is_active' => true,
+        'config' => [
+            'points_awarded' => 5,
+        ],
     ]);
 
-    $engine = new PointsEngine();
-    $service = new AwardPointsService($engine);
+    $smsService = Mockery::mock(SmsService::class);
+    $smsService->shouldReceive('sendToCustomer')->andReturn(null);
 
-    $created = $service->handle($tenant, $customer, ['amount_spent_kes' => 50]);
+    $service = new AwardPointsService(new PointsEngine(), $smsService);
+    
+    $transactions = $service->handle($tenant, $customer, []);
 
-    expect($created)->toBeEmpty();
+    expect($transactions)->toHaveCount(1);
+    expect($transactions[0]->points)->toBe(5);
+
+    $customer->refresh();
+    expect($customer->total_points)->toBe(5);
+    expect($customer->total_visits)->toBe(1);
+});
+
+test('it does not award points if minimum spend is not met', function () {
+    $tenant = Tenant::factory()->create();
+    $program = LoyaltyProgram::factory()->for($tenant)->create(['is_active' => true]);
+    $customer = Customer::factory()->for($tenant)->create(['total_points' => 0]);
+
+    // Create a rule: 1 point per 10 KES, min spend 100
+    $rule = LoyaltyRule::factory()->for($tenant)->create([
+        'loyalty_program_id' => $program->id,
+        'type' => 'spend',
+        'is_active' => true,
+        'config' => [
+            'min_spend_kes' => 100,
+            'points_per_kes' => 0.1,
+        ],
+    ]);
+
+    $smsService = Mockery::mock(SmsService::class);
+    $smsService->shouldReceive('sendToCustomer')->andReturn(null);
+
+    $service = new AwardPointsService(new PointsEngine(), $smsService);
+    
+    $transactions = $service->handle($tenant, $customer, ['amount_spent_kes' => 50]);
+
+    expect($transactions)->toBeEmpty();
 
     $customer->refresh();
     expect($customer->total_points)->toBe(0);

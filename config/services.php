@@ -22,6 +22,12 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'africastalking' => [
+        'username' => env('AFRICASTALKING_USERNAME'),
+        'api_key' => env('AFRICASTALKING_API_KEY'),
+        'from' => env('AFRICASTALKING_FROM', 'LoyaltyOS'),
+    ],
+
     'ses' => [
         'key'    => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

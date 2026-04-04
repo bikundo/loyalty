@@ -7,11 +7,15 @@ use App\Models\PointTransaction;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+
+use App\Services\Sms\SmsService;
 
 class AwardPointsService
 {
     public function __construct(
-        protected PointsEngine $engine
+        protected PointsEngine $engine,
+        protected SmsService $smsService
     ) {}
 
     /**
@@ -26,15 +30,14 @@ class AwardPointsService
     public function handle(Tenant $tenant, Customer $customer, array $transactionData, array $meta = []): array
     {
         return DB::transaction(function () use ($tenant, $customer, $transactionData, $meta) {
+            // Re-fetch customer with lock for safe points increment
+            $customer = Customer::lockForUpdate()->find($customer->id);
+
             $awards = $this->engine->evaluate($tenant, $customer, $transactionData);
             
             if (empty($awards)) {
                 return [];
             }
-
-            // Reload the customer inside transaction to get fresh lock if necessary.
-            // Ideally should use lockForUpdate if multiple concurrent transactions are likely.
-            $customer = Customer::lockForUpdate()->find($customer->id);
 
             $createdTransactions = [];
             $totalPointsEarned = 0;
@@ -56,9 +59,9 @@ class AwardPointsService
                     'points' => $points,
                     'balance_after' => $afterBalance,
                     'amount_spent_kes' => $transactionData['amount_spent_kes'] ?? null,
-                    'note' => $meta['note'] ?? null,
+                    'note' => $meta['note'] ?? "Points earned via {$rule->name}",
                     'triggered_by' => $meta['triggered_by'] ?? 'system',
-                    'triggered_by_user_id' => auth()->id(),
+                    'triggered_by_user_id' => $meta['user_id'] ?? Auth::id(),
                     'idempotency_key' => Str::uuid()->toString(),
                     'created_at' => now(),
                 ]);
@@ -74,8 +77,12 @@ class AwardPointsService
             $customer->last_visit_at = now();
             $customer->save();
 
-            // TODO: Dispatch SMS Notification / Queue job here
-            
+            $this->smsService->sendToCustomer(
+                $customer,
+                "Earning Confirmed! You've earned $totalPointsEarned points at {$tenant->name}. New Balance: {$customer->total_points}.",
+                ['triggered_by' => 'awarding_service']
+            );
+
             return $createdTransactions;
         });
     }

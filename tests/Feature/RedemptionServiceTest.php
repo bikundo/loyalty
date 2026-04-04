@@ -6,7 +6,9 @@ use App\Models\Tenant;
 use App\Models\PointTransaction;
 use App\Models\Redemption;
 use App\Services\RedemptionService;
+use App\Services\Sms\SmsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 
 uses(RefreshDatabase::class);
 
@@ -20,7 +22,10 @@ test('it can redeem a reward successfully', function () {
         'redemptions_count' => 0
     ]);
 
-    $service = new RedemptionService();
+    $smsService = Mockery::mock(SmsService::class);
+    $smsService->shouldReceive('sendToCustomer')->andReturn(null);
+
+    $service = new RedemptionService($smsService);
     $redemption = $service->redeem($customer, $reward, auth()->id());
 
     expect($redemption)->toBeInstanceOf(Redemption::class)
@@ -37,7 +42,7 @@ test('it can redeem a reward successfully', function () {
 
     // Verify Ledger entry
     $transaction = PointTransaction::where('customer_id', $customer->id)
-        ->where('type', 'redeem')
+        ->where('type', 'redemption')
         ->first();
 
     expect($transaction)->not->toBeNull()
@@ -54,9 +59,10 @@ test('it throws exception if customer has insufficient points', function () {
         'points_required' => 500
     ]);
 
-    $service = new RedemptionService();
+    $smsService = Mockery::mock(SmsService::class);
+    $service = new RedemptionService($smsService);
     
-    $this->expectException(\InvalidArgumentException::class);
+    $this->expectException(InvalidArgumentException::class);
     $this->expectExceptionMessage('Insufficient points');
 
     $service->redeem($customer, $reward);
@@ -69,14 +75,10 @@ test('it throws exception if reward belongs to different tenant', function () {
     $customer = Customer::factory()->for($tenant1)->create(['total_points' => 1000]);
     $reward = Reward::factory()->for($tenant2)->create(['points_required' => 500]);
 
-    $service = new RedemptionService();
+    $smsService = Mockery::mock(SmsService::class);
+    $service = new RedemptionService($smsService);
 
-    // The service currently doesn't explicitly check tenant isolation, it relies on the caller
-    // but in a multi-tenant app, it's good practice. 
-    // Let's see if we should add it to the service or keep it in the Livewire layer.
-    // Given the plan, I should probably add a defensive check in the Service.
-    
-    $this->expectException(\InvalidArgumentException::class);
+    $this->expectException(InvalidArgumentException::class);
     $this->expectExceptionMessage('Unauthorized reward selection for this customer');
 
     $service->redeem($customer, $reward);

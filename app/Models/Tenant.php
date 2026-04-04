@@ -95,4 +95,9 @@ class Tenant extends Model
     {
         return $this->hasMany(Subscription::class);
     }
+
+    public function campaigns(): HasMany
+    {
+        return $this->hasMany(Campaign::class);
+    }
 }
